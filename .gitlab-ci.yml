@@ -1,0 +1,36 @@
+stages:
+  - build
+  - test
+  - deploy
+  - service
+  
+build:compileCommander:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:latest
+  script:
+    - cd Birthday-Bot-Sourcecode
+    - dotnet build
+    - mkdir result
+    - cd ..
+    - mkdir result
+    - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
+  only:
+    - /^dev/.*$/i
+    - Development
+    - main
+    - master
+    - master-publish
+    - tags
+    - bugfix-release
+    - /^bugfix-rel/.*$/i
+  artifacts:
+    paths:
+      - result/*
+
+sast:
+  stage: test
+  needs: 
+    - build:compileCommander
+include:
+- template: Jobs/SAST.gitlab-ci.yml
+- template: Jobs/Secret-Detection.gitlab-ci.yml

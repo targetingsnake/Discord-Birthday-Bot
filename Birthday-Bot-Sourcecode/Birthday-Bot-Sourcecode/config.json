@@ -1,0 +1,9 @@
+{
+  "SQlServer": "localhost",
+  "SQLSchema": "testuser",
+  "SQlUser": "testschema",
+  "SQlPassword": "pwd",
+  "DiscordToken": "TokenDc",
+  "MasterDiscord": [],
+  "Hosts": []
+}
