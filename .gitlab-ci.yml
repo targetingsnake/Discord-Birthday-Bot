@@ -15,6 +15,8 @@ build:compileCommander:
     - /^dev/.*$/i
     - Development
     - main
+    - master
+    - master-publish
     - tags
     - bugfix-release
     - /^bugfix-rel/.*$/i
