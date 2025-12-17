@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BirthdayBotConfig\Common.csproj" />
-    <ProjectReference Include="..\BirthdayBotDatabase\Database.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Database\Database.csproj" />
     <ProjectReference Include="..\Discord\Discord.csproj" />
   </ItemGroup>
 
