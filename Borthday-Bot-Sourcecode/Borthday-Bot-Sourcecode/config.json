@@ -1,0 +1,8 @@
+{
+  "SQlServer": "localhost",
+  "SQlUser": "martin",
+  "SQlPassword": "pwd",
+  "DiscordToken": "TokenDc",
+  "MasterDiscord": [],
+  "Hosts": []
+}
