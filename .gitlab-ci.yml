@@ -8,8 +8,10 @@ build:compileCommander:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:latest
   script:
+    - cd Birthday-Bot-Sourcecode
     - dotnet build
     - mkdir result
+    - cd ..
     - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
   only:
     - /^dev/.*$/i
