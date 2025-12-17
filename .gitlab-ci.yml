@@ -12,6 +12,7 @@ build:compileCommander:
     - dotnet build
     - mkdir result
     - cd ..
+    - mkdir result
     - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
   only:
     - /^dev/.*$/i
