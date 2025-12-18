@@ -1,6 +1,8 @@
 ﻿using System.Threading;
 using Common.Cfg;
 using Discord;
+using Database;
+
 
 namespace BotMaster
 {
@@ -10,6 +12,7 @@ namespace BotMaster
         public static void Main(string[] args)
         {
             config cfg = configuration.data;
+            DatabaseConnector.connect(cfg);
             var t = Task.Run(() => Discord.Discord.Main(cfg.DiscordToken, cfg.MasterDiscord));
             t.Wait();
         }

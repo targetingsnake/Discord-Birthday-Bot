@@ -70,6 +70,46 @@ namespace Discord
 
                 // Let's do our global command
 
+                foreach (SocketGuild guild in _client.Guilds)
+                {
+                    List<ApplicationCommandProperties> applicationCommandPropertiesGuild = new();
+                    ulong _guildId = guild.Id;
+                    var monthOption = new SlashCommandOptionBuilder()
+                        .WithName("monat")
+                        .WithType(ApplicationCommandOptionType.String)
+                        .WithMaxValue(12)
+                        .WithMinValue(1)
+                        .WithDescription("Dein Geburtsmonat als Zahl zwischen 1 und 12")
+                        .WithRequired(true);
+                    var dayOption = new SlashCommandOptionBuilder()
+                        .WithName("tag")
+                        .WithType(ApplicationCommandOptionType.String)
+                        .WithMaxValue(31)
+                        .WithMinValue(1)
+                        .WithDescription("Dein Geburtstag als Zahl zwischen 1 und 31")
+                        .WithRequired(true);
+                    var yearOption = new SlashCommandOptionBuilder()
+                        .WithName("jahr")
+                        .WithType(ApplicationCommandOptionType.Integer)
+                        .WithDescription("Dein Geburtsjahr (optional)")
+                        .WithRequired(false);
+                    var globalCommand_setBirthday = new SlashCommandBuilder();
+                    globalCommand_setBirthday.WithName("geburtstag");
+                    globalCommand_setBirthday.WithDescription("Hier kannst du deinen Geburtstag hinzufügen");
+                    globalCommand_setBirthday.AddOption(monthOption);
+                    globalCommand_setBirthday.AddOption(dayOption);
+                    globalCommand_setBirthday.AddOption(yearOption);
+                    applicationCommandPropertiesGuild.Add(globalCommand_setBirthday.Build());
+
+                    var globalCommand_deleteBirthday = new SlashCommandBuilder();
+                    globalCommand_deleteBirthday.WithName("vergissmich");
+                    globalCommand_deleteBirthday.WithDescription("Hiermit kannst du deinen Geburtstag");
+                    applicationCommandPropertiesGuild.Add(globalCommand_deleteBirthday.Build());
+
+                    SocketGuild guildSrc = _client.GetGuild(_guildId);
+                    await guildSrc.BulkOverwriteApplicationCommandAsync(applicationCommandPropertiesGuild.ToArray());
+                }
+
                 // Now that we have our builder, we can call the CreateApplicationCommandAsync method to make our slash command.
                 //await guild.CreateApplicationCommandAsync(guildCommand.Build());
 
@@ -111,6 +151,8 @@ namespace Discord
                     emb.WithFields(field);
                     embeds[0] = emb.Build();
                     await command.RespondAsync("", embeds);
+                    break;
+                case "geburtstag":
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");
