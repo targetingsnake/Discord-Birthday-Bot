@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Database;
+using Database.Con;
 //using System.Xml;
 
 namespace Discord
@@ -106,6 +108,23 @@ namespace Discord
                     globalCommand_deleteBirthday.WithDescription("Hiermit kannst du deinen Geburtstag");
                     applicationCommandPropertiesGuild.Add(globalCommand_deleteBirthday.Build());
 
+                    var modRoleOption = new SlashCommandOptionBuilder()
+                        .WithName("modrole")
+                        .WithType(ApplicationCommandOptionType.Mentionable)
+                        .WithDescription("Rolle des Mods")
+                        .WithRequired(true);
+
+                    var globalCommand_setModRole = new SlashCommandBuilder();
+                    globalCommand_setModRole.WithName("enmod");
+                    globalCommand_setModRole.WithDescription("Hier kann die Rolle der Mods gesetzt werden.");
+                    globalCommand_setModRole.AddOption(modRoleOption);
+                    applicationCommandPropertiesGuild.Add(globalCommand_setModRole.Build());
+
+                    var globalCommand_setChannel = new SlashCommandBuilder();
+                    globalCommand_setChannel.WithName("set_channel");
+                    globalCommand_setChannel.WithDescription("Der Channel, in welchem der Command Ausgeführt wird, bekommt Benachrichtigungen des Bots.");
+                    applicationCommandPropertiesGuild.Add(globalCommand_setChannel.Build());
+
                     SocketGuild guildSrc = _client.GetGuild(_guildId);
                     await guildSrc.BulkOverwriteApplicationCommandAsync(applicationCommandPropertiesGuild.ToArray());
                 }
@@ -135,13 +154,58 @@ namespace Discord
         {
             EmbedBuilder emb = new EmbedBuilder();
             Embed[] embeds = new Embed[1];
+            bool mod = false;
+            bool master = false;
+            bool right_channel = false;
+            ulong right_channelId = 0;
+            if (command.GuildId is not null)
+            {
+                ulong modRoleId = DatabaseConnector.instanze.getMod(command.GuildId.Value);
+                SocketRole[] usrRoles = ((SocketGuildUser)command.User).Roles.ToArray();
+                foreach(SocketRole role in usrRoles)
+                {
+                    if (modRoleId == role.Id)
+                    {
+                        mod = true;
+                    }
+                }
+                if(!mod)
+                {
+                    SocketUser owner = _client.GetGuild(command.GuildId.Value).Owner;
+                    if (owner.Id == command.User.Id)
+                    {
+                        mod = true;
+                        Console.WriteLine("Owner of Discord.");
+                    }
+                }
+                SocketTextChannel cmd_channel = (SocketTextChannel)command.Channel;
+                right_channelId = DatabaseConnector.instanze.getChannel(command.GuildId.Value);
+                if (cmd_channel.Id == right_channelId)
+                {
+                    right_channel = true;
+                }
+            }
             if (_Masters.Contains(command.User.Id))
             {
                 Console.WriteLine("DC Master has wridden.");
+                master = true;
+                mod = true;
             }
+            ulong ServerId = 0;
+            ulong MemberId = 0;
             switch (command.CommandName)
             {
                 case "infome":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!right_channel)
+                    {
+                        await command.RespondAsync($"Der Command kann nur im Channel <#{right_channelId}> ausgeführt werden.", null, false, true);
+                        break;
+                    }
                     emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
                     emb.WithDescription(command.User.Mention);
                     emb.WithTitle("Userinfo");
@@ -153,6 +217,126 @@ namespace Discord
                     await command.RespondAsync("", embeds);
                     break;
                 case "geburtstag":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!right_channel)
+                    {
+                        await command.RespondAsync($"Der Command kann nur im Channel <#{right_channelId}> ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    MemberId = command.User.Id;
+                    int day = -1;
+                    int month = -1;
+                    int year = -1;
+                    foreach (SocketSlashCommandDataOption option in command.Data.Options)
+                    {
+                        switch (option.Name)
+                        {
+                            case "tag":
+                                day = Int32.Parse((string)option.Value);
+                                break;
+                            case "monat":
+                                month = Int32.Parse((string)option.Value);
+                                break;
+                            case "jahr":
+                                year = Int32.Parse((string)option.Value);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    if (year == -1)
+                    {
+                        DatabaseConnector.instanze.setBirthday(ServerId, MemberId, day, month);
+                    }
+                    else
+                    {
+                        DatabaseConnector.instanze.setBirthday(ServerId, MemberId, day, month, year);
+                    }
+                    emb.WithDescription($"{command.User.Mention} dein Geburtstag wurde für diesen Server hinzugefügt.");
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
+                    break;
+                case "vergissmich":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!right_channel)
+                    {
+                        await command.RespondAsync($"Der Command kann nur im Channel <#{right_channelId}> ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    MemberId = command.User.Id;
+                    DatabaseConnector.instanze.deleteBirthday(ServerId, MemberId);
+                    emb.WithDescription($"{command.User.Mention} dein Geburtstag wurde für diesen Server entfernt.");
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
+                    break;
+                case "enmod":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!mod)
+                    {
+                        await command.RespondAsync($"Der Command muss durch einen Mod ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    SocketSlashCommandDataOption modrole = command.Data.Options.First();
+                    if (modrole.Value.GetType() != typeof(SocketRole))
+                    {
+                        await command.RespondAsync($"Es muss eine Rolle angegeben werden.", null, false, true);
+                        break;
+                    }
+                    SocketRole socketRole = (SocketRole)modrole.Value;
+                    if (socketRole.IsManaged)
+                    {
+                        await command.RespondAsync($"Die Rolle muss Serverspezifisch sein.", null, false, true);
+                        break;
+                    }
+                    DatabaseConnector.instanze.setMod(command.GuildId.Value, socketRole.Id);
+                    emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
+                    emb.WithDescription($"Die Modrolle des Bots gesetzt.");
+                    emb.WithTitle("Enmod");
+                    EmbedFieldBuilder field_modrole = new EmbedFieldBuilder();
+                    field_modrole.WithName("Rolle");
+                    field_modrole.WithValue($"{socketRole.Mention}");
+                    emb.WithFields(field_modrole);
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
+                    break;
+                case "set_channel":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!mod)
+                    {
+                        await command.RespondAsync($"Der Command muss durch einen Mod ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    ulong channelid = command.Channel.Id;
+                    DatabaseConnector.instanze.setChannel(ServerId, channelid);
+                    emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
+                    emb.WithDescription($"Der Channel des Bots gesetzt.");
+                    emb.WithTitle("set_channel");
+                    EmbedFieldBuilder field_channel = new EmbedFieldBuilder();
+                    field_channel.WithName("Channel");
+                    SocketTextChannel channel = (SocketTextChannel) command.Channel;
+                    field_channel.WithValue($"{channel.Mention}");
+                    emb.WithFields(field_channel);
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");
