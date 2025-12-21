@@ -27,14 +27,6 @@ build:compileCommander_dev:
     paths:
       - result/*
 
-sast:
-  stage: test
-  needs: 
-    - build:compileCommander_dev
-include:
-- template: Jobs/SAST.gitlab-ci.yml
-- template: Jobs/Secret-Detection.gitlab-ci.yml
-
 build:compileCommander_prod:
   stage: build-prod
   image: mcr.microsoft.com/dotnet/sdk:latest
@@ -52,5 +44,39 @@ build:compileCommander_prod:
     paths:
       - result-release/*.dll
       - result-release/Birthday-Bot-Sourcecode
-      - result/config.json
+      - result-release/config.json
   dependencies: []
+
+sast:
+  stage: test
+  needs: 
+    - build:compileCommander_dev
+include:
+- template: Jobs/SAST.gitlab-ci.yml
+- template: Jobs/Secret-Detection.gitlab-ci.yml
+
+deploy_enroleBot_dev:
+  stage: deploy
+  tags:
+    - deployment-birthday-bot
+  only:
+    - master
+    - master-publish
+    - tags
+  needs:
+    - build:compileCommander_dev
+    - build:compileCommander_prod
+    - secret_detection
+    - semgrep-sast
+  dependencies:
+    - build:compileCommander_prod
+  script:
+    - chmod +x deploy/bash/install-dev.sh
+    - sudo ./deploy/bash/install-dev.sh
+    - sudo systemctl stop bithday-bot.service
+    - mkdir -p /opt/birthday-bot
+    - rm -Rv /opt/birthday-bot/*
+    - cp -Rv result-release/* /opt/birthday-bot/
+    - cp /etc/birthday-bot/dev.overwrite.json /opt/birthday-bot/overwrite.json
+    - sudo systemctl start bithday-bot.service
+  when: manual

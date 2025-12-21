@@ -1,0 +1,13 @@
+[Unit]
+Description=Birthday Bot
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/dotnet /opt/birthday-bot/Birthday-Bot-Sourcecode
+WorkingDirectory=/opt/birthday-bot
+Restart=always
+
+
+[Install]
+WantedBy=default.target
+RequiredBy=network.target
