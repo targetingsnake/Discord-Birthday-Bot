@@ -1,17 +1,20 @@
-﻿using Discord;
+﻿using Database;
+using Database.Con;
+using Discord;
+using Discord.Commands;
 using Discord.Interactions;
 using Discord.Net;
-using Discord.WebSocket;
+using Discord.Net.Udp;
+using Discord.Net.WebSockets;
 using Discord.Webhook;
-using Discord.Commands;
+using Discord.WebSocket;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Database;
-using Database.Con;
 //using System.Xml;
 
 namespace Discord
@@ -26,12 +29,20 @@ namespace Discord
             return Task.CompletedTask;
         }
 
-        private DiscordSocketClient _client = new DiscordSocketClient();
+        private DiscordSocketClient _client = null;
 
         private ulong[] _Masters = { };
 
         private async Task MainAsync(string token, ulong[] masters)
         {
+
+            DiscordSocketConfig socketCfg = new DiscordSocketConfig
+            {
+                WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.GetSystemWebProxy()),
+                UdpSocketProvider = DefaultUdpSocketProvider.Instance
+            };
+
+            _client = new DiscordSocketClient(socketCfg);
             Console.WriteLine("Initialising");
 
             _Masters = masters;
