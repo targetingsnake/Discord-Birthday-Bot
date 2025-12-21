@@ -43,7 +43,7 @@ build:compileCommander_prod:
     - dotnet build --configuration Release
     - cd ..
     - mkdir result-release
-    - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result-release/
+    - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net*/* result-release/
   only:
     - master
     - master-publish
