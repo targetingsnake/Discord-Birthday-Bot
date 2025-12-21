@@ -173,11 +173,14 @@ namespace Discord
             {
                 ulong modRoleId = DatabaseConnector.instanze.getMod(command.GuildId.Value);
                 SocketRole[] usrRoles = ((SocketGuildUser)command.User).Roles.ToArray();
-                foreach(SocketRole role in usrRoles)
+                if (modRoleId != 0)
                 {
-                    if (modRoleId == role.Id)
+                    foreach (SocketRole role in usrRoles)
                     {
-                        mod = true;
+                        if (modRoleId == role.Id)
+                        {
+                            mod = true;
+                        }
                     }
                 }
                 if(!mod)
@@ -191,7 +194,14 @@ namespace Discord
                 }
                 SocketTextChannel cmd_channel = (SocketTextChannel)command.Channel;
                 right_channelId = DatabaseConnector.instanze.getChannel(command.GuildId.Value);
-                if (cmd_channel.Id == right_channelId)
+                if (right_channelId != 0)
+                {
+                    if (cmd_channel.Id == right_channelId)
+                    {
+                        right_channel = true;
+                    }
+                }
+                else
                 {
                     right_channel = true;
                 }

@@ -16,7 +16,8 @@ namespace Database.Con
 
         private MySqlConnection connection = null;
 
-        public baseConnector(config cfg) {
+        public baseConnector(config cfg)
+        {
             string connectionString = $"Server={cfg.SQlServer};Port=3306;UserID={cfg.SQlUser};Password={cfg.SQlPassword};Database={cfg.SQLSchema};";
             connection = new MySqlConnection(connectionString);
             connection.Open();
@@ -25,7 +26,8 @@ namespace Database.Con
             MySqlCommand command = new MySqlCommand("show tables;", connection);
             MySqlDataReader reader = command.ExecuteReader();
             string result = "";
-            while (reader.Read()){
+            while (reader.Read())
+            {
                 result += reader.GetString(0) + "\n";
             }
             reader.Close();
@@ -71,7 +73,7 @@ namespace Database.Con
             cmd.ExecuteNonQuery();
         }
 
-        public void setMod(ulong guildID, ulong roleid )
+        public void setMod(ulong guildID, ulong roleid)
         {
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = connection;
@@ -102,11 +104,18 @@ namespace Database.Con
             cmd.Parameters.AddWithValue("@guildid", guildID);
             MySqlDataReader reader = cmd.ExecuteReader();
             ulong result = 0;
-            while (reader.Read())
+            try
             {
-                result = reader.GetUInt64(0);
+                while (reader.Read())
+                {
+                    result = reader.GetUInt64(0);
+                }
             }
-            reader.Close();
+            catch { }
+            finally 
+            { 
+                reader.Close(); 
+            }
             return result;
         }
         public ulong getChannel(ulong guildID)
@@ -118,11 +127,18 @@ namespace Database.Con
             cmd.Parameters.AddWithValue("@guildid", guildID);
             MySqlDataReader reader = cmd.ExecuteReader();
             ulong result = 0;
-            while (reader.Read())
+            try
             {
-                result = reader.GetUInt64(0);
+                while (reader.Read())
+                {
+                    result = reader.GetUInt64(0);
+                }
             }
-            reader.Close();
+            catch { }
+            finally
+            {
+                reader.Close();
+            }
             return result;
         }
     }
