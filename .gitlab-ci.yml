@@ -11,7 +11,6 @@ build:compileCommander_dev:
   script:
     - cd Birthday-Bot-Sourcecode
     - dotnet build
-    - mkdir result
     - cd ..
     - mkdir result
     - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
@@ -42,7 +41,6 @@ build:compileCommander_prod:
   script:
     - cd Birthday-Bot-Sourcecode
     - dotnet build --configuration Release
-    - mkdir result
     - cd ..
     - mkdir result
     - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
