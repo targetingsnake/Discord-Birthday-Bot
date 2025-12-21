@@ -71,8 +71,8 @@ deploy_enroleBot_dev:
   dependencies:
     - build:compileCommander_prod
   script:
-    - chmod +x deploy/bash/install-dev.sh
-    - sudo ./deploy/bash/install-dev.sh
+    - chmod +x deploy/bash/install.sh
+    - sudo ./deploy/bash/install.sh
     - sudo systemctl stop bithday-bot.service
     - mkdir -p /opt/birthday-bot
     - rm -Rv /opt/birthday-bot/*
