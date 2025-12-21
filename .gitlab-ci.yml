@@ -50,5 +50,7 @@ build:compileCommander_prod:
     - tags
   artifacts:
     paths:
-      - result-release/*
+      - result-release/*.dll
+      - result-release/Birthday-Bot-Sourcecode
+      - result/config.json
   dependencies: []
