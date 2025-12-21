@@ -35,7 +35,7 @@ namespace Discord
             Console.WriteLine("Initialising");
 
             _Masters = masters;
-
+            
             _client.Log += Log;
 
             await _client.LoginAsync(TokenType.Bot, token);
