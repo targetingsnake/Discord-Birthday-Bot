@@ -42,12 +42,13 @@ build:compileCommander_prod:
     - cd Birthday-Bot-Sourcecode
     - dotnet build --configuration Release
     - cd ..
-    - mkdir result
-    - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
+    - mkdir result-release
+    - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result-release/
   only:
     - master
     - master-publish
     - tags
   artifacts:
     paths:
-      - result/*
+      - result-release/*
+  dependencies: []
