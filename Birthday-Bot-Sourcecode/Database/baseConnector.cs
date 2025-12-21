@@ -111,10 +111,13 @@ namespace Database.Con
                     result = reader.GetUInt64(0);
                 }
             }
-            catch { }
-            finally 
-            { 
-                reader.Close(); 
+            catch
+            {
+                Console.WriteLine($"Mod-Role for Discord {guildID.ToString()} not set.");
+            }
+            finally
+            {
+                reader.Close();
             }
             return result;
         }
@@ -134,7 +137,10 @@ namespace Database.Con
                     result = reader.GetUInt64(0);
                 }
             }
-            catch { }
+            catch
+            {
+                Console.WriteLine($"Channel for Discord {guildID.ToString()} not set.");
+            }
             finally
             {
                 reader.Close();
