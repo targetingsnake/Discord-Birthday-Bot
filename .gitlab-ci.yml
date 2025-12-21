@@ -1,6 +1,5 @@
 stages:
   - build
-  - build-prod
   - test
   - deploy
   - service
@@ -28,7 +27,7 @@ build:compileCommander_dev:
       - result/*
 
 build:compileCommander_prod:
-  stage: build-prod
+  stage: build
   image: mcr.microsoft.com/dotnet/sdk:latest
   script:
     - cd Birthday-Bot-Sourcecode
