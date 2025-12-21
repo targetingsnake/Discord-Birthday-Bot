@@ -1,10 +1,11 @@
 stages:
   - build
+  - build-prod
   - test
   - deploy
   - service
   
-build:compileCommander:
+build:compileCommander_dev:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:latest
   script:
@@ -30,7 +31,25 @@ build:compileCommander:
 sast:
   stage: test
   needs: 
-    - build:compileCommander
+    - build:compileCommander_dev
 include:
 - template: Jobs/SAST.gitlab-ci.yml
 - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+build:compileCommander_prod:
+  stage: build-prod
+  image: mcr.microsoft.com/dotnet/sdk:latest
+  script:
+    - cd Birthday-Bot-Sourcecode
+    - dotnet build --configuration Release
+    - mkdir result
+    - cd ..
+    - mkdir result
+    - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
+  only:
+    - master
+    - master-publish
+    - tags
+  artifacts:
+    paths:
+      - result/*
