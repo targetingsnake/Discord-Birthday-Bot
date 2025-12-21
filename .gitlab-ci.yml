@@ -74,7 +74,7 @@ deploy_enroleBot_dev:
     - chmod +x deploy/bash/install.sh
     - sudo ./deploy/bash/install.sh
     - sudo systemctl stop bithday-bot.service
-    - mkdir -p /opt/birthday-bot
+    - sudo mkdir -p /opt/birthday-bot
     - rm -Rv /opt/birthday-bot/*
     - cp -Rv result-release/* /opt/birthday-bot/
     - cp /etc/birthday-bot/dev.overwrite.json /opt/birthday-bot/overwrite.json
