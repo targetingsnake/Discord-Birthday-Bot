@@ -36,7 +36,7 @@ build:compileCommander_prod:
     - cd ..
     - mkdir result-release
     - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net*/* result-release/
-    - chown -rv 998:998 result-release
+    - chown -Rv 998:998 result-release
   only:
     - master
     - master-publish
