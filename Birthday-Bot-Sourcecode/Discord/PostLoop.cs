@@ -119,7 +119,7 @@ namespace Discord
                 }
                 else
                 {
-                    mapping[server_id] = discordServer.DefaultChannel.Id;
+                    mapping[server_id] = discordServer.SystemChannel.Id;
                 }
                     
             }
