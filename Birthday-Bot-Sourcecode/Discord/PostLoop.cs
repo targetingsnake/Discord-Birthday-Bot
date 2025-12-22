@@ -45,6 +45,12 @@ namespace Discord
             {
                 foreach (ulong server in map.Keys)
                 {
+                    if (!checkChannelExists(server, map[server]))
+                    {
+                        Console.WriteLine("Channel has been deleted.");
+                        DatabaseConnector.instanze.setChannel(server, 0);
+                        updateMap();
+                    }
                     postBirthdays(server, map[server]);
                 }
                 Thread.Sleep(loop_wait);
@@ -67,6 +73,18 @@ namespace Discord
             }
         }
 
+        private bool checkChannelExists(ulong serverId, ulong ChannelId)
+        {
+            SocketGuild discordServer = Discord.instanz.GetGuild(serverId);
+            SocketChannel[] serverChannels = discordServer.Channels.ToArray();
+            List<ulong> channelIds = new List<ulong>();
+            foreach (SocketChannel channel in serverChannels)
+            {
+                channelIds.Add(channel.Id);
+            }
+            return channelIds.Contains(ChannelId);
+        }
+
         private string CreateEmbed(ulong userID)
         {            
             Random random = new Random();
@@ -87,14 +105,21 @@ namespace Discord
             }
             foreach (ulong server_id in server_ids)
             {
-                ulong ChannelID = DatabaseConnector.instanze.getChannel(server_id);
-                if (ChannelID == 0)
+                SocketGuild discordServer = Discord.instanz.GetGuild(server_id);
+                SocketChannel[] serverChannels = discordServer.Channels.ToArray();
+                List<ulong> channelIds = new List<ulong>();
+                foreach (SocketChannel channel in serverChannels)
                 {
-                    mapping[server_id] = DatabaseConnector.instanze.getChannel(server_id);
+                    channelIds.Add(channel.Id); 
+                }
+                ulong ChannelID = DatabaseConnector.instanze.getChannel(server_id);
+                if (ChannelID != 0 && channelIds.Contains(ChannelID))
+                {
+                    mapping[server_id] = ChannelID;
                 }
                 else
                 {
-                    mapping[server_id] = Discord.instanz.GetGuild(server_id).DefaultChannel.Id;
+                    mapping[server_id] = discordServer.DefaultChannel.Id;
                 }
                     
             }
@@ -104,6 +129,7 @@ namespace Discord
 
         public void reloadMap()
         {
+            Console.WriteLine("Channel changed");
             updateMap();
         }
     }
