@@ -1,5 +1,6 @@
 ﻿using Database;
 using Database.Con;
+using Common;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
@@ -89,14 +90,14 @@ namespace Discord
                     ulong _guildId = guild.Id;
                     var monthOption = new SlashCommandOptionBuilder()
                         .WithName("monat")
-                        .WithType(ApplicationCommandOptionType.String)
+                        .WithType(ApplicationCommandOptionType.Integer)
                         .WithMaxValue(12)
                         .WithMinValue(1)
                         .WithDescription("Dein Geburtsmonat als Zahl zwischen 1 und 12")
                         .WithRequired(true);
                     var dayOption = new SlashCommandOptionBuilder()
                         .WithName("tag")
-                        .WithType(ApplicationCommandOptionType.String)
+                        .WithType(ApplicationCommandOptionType.Integer)
                         .WithMaxValue(31)
                         .WithMinValue(1)
                         .WithDescription("Dein Geburtstag als Zahl zwischen 1 und 31")
@@ -233,7 +234,19 @@ namespace Discord
                     EmbedFieldBuilder field = new EmbedFieldBuilder();
                     field.WithName("ID");
                     field.WithValue(command.User.Id);
+                    EmbedFieldBuilder field_birthday = new EmbedFieldBuilder();
                     emb.WithFields(field);
+                    int[] birthday_array = DatabaseConnector.instanze.getBirthday(command.User.Id);
+                    field_birthday.WithName("Geburtstag");
+                    if (birthday_array !=  null)
+                    {
+                        string birthday = helper.intArrayToBorthdayString(birthday_array);
+                        field_birthday.WithValue(birthday);
+                    } else
+                    {
+                        field_birthday.WithValue("nicht angegeben");
+                    }
+                    emb.WithFields(field_birthday);
                     embeds[0] = emb.Build();
                     await command.RespondAsync("", embeds);
                     break;
@@ -250,21 +263,21 @@ namespace Discord
                     }
                     ServerId = command.GuildId.Value;
                     MemberId = command.User.Id;
-                    int day = -1;
-                    int month = -1;
-                    int year = -1;
+                    long day = -1;
+                    long month = -1;
+                    long year = -1;
                     foreach (SocketSlashCommandDataOption option in command.Data.Options)
                     {
                         switch (option.Name)
                         {
                             case "tag":
-                                day = Int32.Parse((string)option.Value);
+                                day = (long)option.Value;
                                 break;
                             case "monat":
-                                month = Int32.Parse((string)option.Value);
+                                month = (long)option.Value;
                                 break;
                             case "jahr":
-                                year = Int32.Parse((string)option.Value);
+                                year = (long)option.Value;
                                 break;
                             default:
                                 break;

@@ -6,8 +6,10 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Database.Con
 {
@@ -35,7 +37,7 @@ namespace Database.Con
             Console.WriteLine("Database Initialized.");
         }
 
-        public void setBirthday(ulong guildID, ulong userid, int day, int month, int year)
+        public void setBirthday(ulong guildID, ulong userid, long day, long month, long year)
         {
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = connection;
@@ -49,7 +51,7 @@ namespace Database.Con
             cmd.ExecuteNonQuery();
         }
 
-        public void setBirthday(ulong guildID, ulong userid, int day, int month)
+        public void setBirthday(ulong guildID, ulong userid, long day, long month)
         {
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = connection;
@@ -144,6 +146,43 @@ namespace Database.Con
             finally
             {
                 reader.Close();
+            }
+            return result;
+        }
+
+        public int[] getBirthday(ulong userId)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "Select day, month, year from birthdays where uid = @uid ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@uid", userId);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            int[] result = [0, 0, 0];
+            try
+            {
+                while (reader.Read())
+                {
+                    result[0] = reader.GetInt32(0);
+                    result[1] = reader.GetInt32(1);
+                    object result3 = reader.GetValue(2);
+                    if (result3 != null)
+                    {
+                        result[2] = (int)result3;
+                    }
+                }
+            }
+            catch
+            {
+                Console.WriteLine($"The Birthday of {userId.ToString()} has triggered an error.");
+            }
+            finally
+            {
+                reader.Close();
+            }
+            if (result[0] == 0 || result[1] == 0)
+            {
+                return null;
             }
             return result;
         }
