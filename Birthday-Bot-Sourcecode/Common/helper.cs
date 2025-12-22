@@ -11,7 +11,7 @@ namespace Common
         public static string intArrayToBorthdayString(int[] data)
         {
             string birthday = data[0].ToString("00") + "." + data[1].ToString("00");
-            if (data[2] != 0)
+            if (data[2] != -1)
             {
                 birthday += "." + data[2].ToString("0000");
             }
