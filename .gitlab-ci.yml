@@ -61,7 +61,6 @@ deploy_enroleBot_dev:
   tags:
     - deployment-birthday-bot
   only:
-    - master
     - master-publish
     - tags
   needs:
