@@ -71,6 +71,9 @@ namespace Discord
 
             _client.Ready += Client_Ready;
             _client.SlashCommandExecuted += SlashCommandHandler;
+            _client.JoinedGuild += TryAddGuildCommands;
+
+
 
             postLoop = new Thread(PostLoop.Instance.postLoop);
             
@@ -104,59 +107,7 @@ namespace Discord
 
                 foreach (SocketGuild guild in _client.Guilds)
                 {
-                    List<ApplicationCommandProperties> applicationCommandPropertiesGuild = new();
-                    ulong _guildId = guild.Id;
-                    var monthOption = new SlashCommandOptionBuilder()
-                        .WithName("monat")
-                        .WithType(ApplicationCommandOptionType.Integer)
-                        .WithMaxValue(12)
-                        .WithMinValue(1)
-                        .WithDescription("Dein Geburtsmonat als Zahl zwischen 1 und 12")
-                        .WithRequired(true);
-                    var dayOption = new SlashCommandOptionBuilder()
-                        .WithName("tag")
-                        .WithType(ApplicationCommandOptionType.Integer)
-                        .WithMaxValue(31)
-                        .WithMinValue(1)
-                        .WithDescription("Dein Geburtstag als Zahl zwischen 1 und 31")
-                        .WithRequired(true);
-                    var yearOption = new SlashCommandOptionBuilder()
-                        .WithName("jahr")
-                        .WithType(ApplicationCommandOptionType.Integer)
-                        .WithDescription("Dein Geburtsjahr (optional)")
-                        .WithRequired(false);
-                    var globalCommand_setBirthday = new SlashCommandBuilder();
-                    globalCommand_setBirthday.WithName("geburtstag");
-                    globalCommand_setBirthday.WithDescription("Hier kannst du deinen Geburtstag hinzufügen");
-                    globalCommand_setBirthday.AddOption(monthOption);
-                    globalCommand_setBirthday.AddOption(dayOption);
-                    globalCommand_setBirthday.AddOption(yearOption);
-                    applicationCommandPropertiesGuild.Add(globalCommand_setBirthday.Build());
-
-                    var globalCommand_deleteBirthday = new SlashCommandBuilder();
-                    globalCommand_deleteBirthday.WithName("vergissmich");
-                    globalCommand_deleteBirthday.WithDescription("Hiermit kannst du deinen Geburtstag");
-                    applicationCommandPropertiesGuild.Add(globalCommand_deleteBirthday.Build());
-
-                    var modRoleOption = new SlashCommandOptionBuilder()
-                        .WithName("modrole")
-                        .WithType(ApplicationCommandOptionType.Mentionable)
-                        .WithDescription("Rolle des Mods")
-                        .WithRequired(true);
-
-                    var globalCommand_setModRole = new SlashCommandBuilder();
-                    globalCommand_setModRole.WithName("enmod");
-                    globalCommand_setModRole.WithDescription("Hier kann die Rolle der Mods gesetzt werden.");
-                    globalCommand_setModRole.AddOption(modRoleOption);
-                    applicationCommandPropertiesGuild.Add(globalCommand_setModRole.Build());
-
-                    var globalCommand_setChannel = new SlashCommandBuilder();
-                    globalCommand_setChannel.WithName("set_channel");
-                    globalCommand_setChannel.WithDescription("Der Channel, in welchem der Command Ausgeführt wird, bekommt Benachrichtigungen des Bots.");
-                    applicationCommandPropertiesGuild.Add(globalCommand_setChannel.Build());
-
-                    SocketGuild guildSrc = _client.GetGuild(_guildId);
-                    await guildSrc.BulkOverwriteApplicationCommandAsync(applicationCommandPropertiesGuild.ToArray());
+                    await addGuildCommands(guild);
                 }
 
                 // Now that we have our builder, we can call the CreateApplicationCommandAsync method to make our slash command.
@@ -181,6 +132,79 @@ namespace Discord
             {
                 postLoop.Start(config);
             }
+        }
+
+        private async Task TryAddGuildCommands(SocketGuild guild)
+        {
+            try
+            {
+                addGuildCommands(guild);
+            }
+            catch (HttpException exception)
+            {
+                // If our command was invalid, we should catch an ApplicationCommandException. This exception contains the path of the error as well as the error message. You can serialize the Error field in the exception to get a visual of where your error is.
+                var json = JsonConvert.SerializeObject(exception.Errors, Formatting.Indented);
+
+                // You can send this error somewhere or just print it to the console, for this example we're just going to print it.
+                Console.WriteLine(json);
+            }
+        }
+
+        private async Task addGuildCommands(SocketGuild guild)
+        {
+            List<ApplicationCommandProperties> applicationCommandPropertiesGuild = new();
+            ulong _guildId = guild.Id;
+            var monthOption = new SlashCommandOptionBuilder()
+                .WithName("monat")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithMaxValue(12)
+                .WithMinValue(1)
+                .WithDescription("Dein Geburtsmonat als Zahl zwischen 1 und 12")
+                .WithRequired(true);
+            var dayOption = new SlashCommandOptionBuilder()
+                .WithName("tag")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithMaxValue(31)
+                .WithMinValue(1)
+                .WithDescription("Dein Geburtstag als Zahl zwischen 1 und 31")
+                .WithRequired(true);
+            var yearOption = new SlashCommandOptionBuilder()
+                .WithName("jahr")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithDescription("Dein Geburtsjahr (optional)")
+                .WithRequired(false);
+            var globalCommand_setBirthday = new SlashCommandBuilder();
+            globalCommand_setBirthday.WithName("geburtstag");
+            globalCommand_setBirthday.WithDescription("Hier kannst du deinen Geburtstag hinzufügen");
+            globalCommand_setBirthday.AddOption(monthOption);
+            globalCommand_setBirthday.AddOption(dayOption);
+            globalCommand_setBirthday.AddOption(yearOption);
+            applicationCommandPropertiesGuild.Add(globalCommand_setBirthday.Build());
+
+            var globalCommand_deleteBirthday = new SlashCommandBuilder();
+            globalCommand_deleteBirthday.WithName("vergissmich");
+            globalCommand_deleteBirthday.WithDescription("Hiermit kannst du deinen Geburtstag");
+            applicationCommandPropertiesGuild.Add(globalCommand_deleteBirthday.Build());
+
+            var modRoleOption = new SlashCommandOptionBuilder()
+                .WithName("modrole")
+                .WithType(ApplicationCommandOptionType.Mentionable)
+                .WithDescription("Rolle des Mods")
+                .WithRequired(true);
+
+            var globalCommand_setModRole = new SlashCommandBuilder();
+            globalCommand_setModRole.WithName("enmod");
+            globalCommand_setModRole.WithDescription("Hier kann die Rolle der Mods gesetzt werden.");
+            globalCommand_setModRole.AddOption(modRoleOption);
+            applicationCommandPropertiesGuild.Add(globalCommand_setModRole.Build());
+
+            var globalCommand_setChannel = new SlashCommandBuilder();
+            globalCommand_setChannel.WithName("set_channel");
+            globalCommand_setChannel.WithDescription("Der Channel, in welchem der Command Ausgeführt wird, bekommt Benachrichtigungen des Bots.");
+            applicationCommandPropertiesGuild.Add(globalCommand_setChannel.Build());
+
+            SocketGuild guildSrc = _client.GetGuild(_guildId);
+            await guildSrc.BulkOverwriteApplicationCommandAsync(applicationCommandPropertiesGuild.ToArray());
         }
 
 
