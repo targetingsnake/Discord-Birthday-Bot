@@ -2,6 +2,7 @@
 using Common.Cfg;
 using Discord;
 using Database;
+using System.Net;
 
 
 namespace BotMaster
@@ -13,7 +14,12 @@ namespace BotMaster
         {
             config cfg = configuration.data;
             DatabaseConnector.connect(cfg);
-            var t = Task.Run(() => Discord.Discord.Main(cfg.DiscordToken, cfg.MasterDiscord));
+
+
+            WebRequest.DefaultWebProxy = WebRequest.GetSystemWebProxy();
+            Console.WriteLine(WebRequest.DefaultWebProxy);
+
+            var t = Task.Run(() => Discord.Discord.Main(cfg));
             t.Wait();
         }
     }

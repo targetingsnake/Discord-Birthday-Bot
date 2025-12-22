@@ -6,6 +6,8 @@
     <RootNamespace>Borthday_Bot_Sourcecode</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <StartupObject>BotMaster.BotFather</StartupObject>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
 
   <ItemGroup>

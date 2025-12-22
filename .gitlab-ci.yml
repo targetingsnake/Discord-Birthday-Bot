@@ -4,19 +4,18 @@ stages:
   - deploy
   - service
   
-build:compileCommander:
+build:compileCommander_dev:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:latest
   script:
     - cd Birthday-Bot-Sourcecode
     - dotnet build
-    - mkdir result
     - cd ..
     - mkdir result
     - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
   only:
     - /^dev/.*$/i
-    - Development
+    - development
     - main
     - master
     - master-publish
@@ -27,10 +26,81 @@ build:compileCommander:
     paths:
       - result/*
 
+build:compileCommander_prod:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:latest
+  script:
+    - cd Birthday-Bot-Sourcecode
+    - dotnet build --configuration Release
+    - cd ..
+    - mkdir result-release
+    - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net*/* result-release/
+    - chown -Rv 998:998 result-release
+  only:
+    - master
+    - development
+    - master-publish
+    - tags
+  artifacts:
+    paths:
+      - result-release/*.dll
+      - result-release/*.json
+      - result-release/Birthday-Bot-Sourcecode
+      - result-release/config.json
+  dependencies: []
+
 sast:
   stage: test
   needs: 
-    - build:compileCommander
+    - build:compileCommander_dev
 include:
 - template: Jobs/SAST.gitlab-ci.yml
 - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+deploy_enroleBot_prod:
+  stage: deploy
+  tags:
+    - deployment-birthday-bot
+  only:
+    - master-publish
+  needs:
+    - build:compileCommander_dev
+    - build:compileCommander_prod
+    - secret_detection
+    - semgrep-sast
+  dependencies:
+    - build:compileCommander_prod
+  script:
+    - chmod +x deploy/bash/install.sh
+    - sudo ./deploy/bash/install.sh
+    - sudo systemctl stop bithday-bot.service
+    - sudo mkdir -p /opt/birthday-bot
+    - sudo rm -Rv /opt/birthday-bot/* || true
+    - sudo cp -Rv result-release/* /opt/birthday-bot/
+    - sudo cp /etc/birthday-bot/overwrite.json /opt/birthday-bot/overwrite.json
+    - sudo chmod -Rv 777 /opt/birthday-bot/
+    - sudo systemctl start bithday-bot.service
+
+deploy_enroleBot_dev:
+  stage: deploy
+  tags:
+    - deployment-birthday-bot
+  only:
+    - development
+  needs:
+    - build:compileCommander_dev
+    - build:compileCommander_prod
+    - secret_detection
+    - semgrep-sast
+  dependencies:
+    - build:compileCommander_prod
+  script:
+    - chmod +x deploy/bash/install-devel.sh
+    - sudo ./deploy/bash/install-devel.sh
+    - sudo systemctl stop bithday-bot-devel.service
+    - sudo mkdir -p /opt/birthday-bot-devel
+    - sudo rm -Rv /opt/birthday-bot-devel/* || true
+    - sudo cp -Rv result-release/* /opt/birthday-bot-devel/
+    - sudo cp /etc/birthday-bot/dev.overwrite.json /opt/birthday-bot-devel/dev.overwrite.json
+    - sudo chmod -Rv 777 /opt/birthday-bot-devel/
+    - sudo systemctl start bithday-bot-devel.service
