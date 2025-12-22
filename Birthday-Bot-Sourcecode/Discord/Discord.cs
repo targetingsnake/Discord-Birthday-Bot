@@ -417,6 +417,7 @@ namespace Discord
                     emb.WithFields(field_channel);
                     embeds[0] = emb.Build();
                     await command.RespondAsync("", embeds);
+                    PostLoop.Instance.reloadMap();
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");
