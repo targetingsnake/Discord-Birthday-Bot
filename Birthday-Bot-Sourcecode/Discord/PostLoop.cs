@@ -92,6 +92,11 @@ namespace Discord
                 {
                     mapping[server_id] = DatabaseConnector.instanze.getChannel(server_id);
                 }
+                else
+                {
+                    mapping[server_id] = Discord.instanz.GetGuild(server_id).DefaultChannel.Id;
+                }
+                    
             }
             Console.WriteLine("Posting Loop Map initialized");
             map = mapping;
