@@ -5,9 +5,9 @@
 #    echo "$FILE exists."
 #    EXISTS=1
 #fi
-systemctl stop bithday-bot.service
-systemd disable bithday-bot.service
+systemctl stop bithday-bot-devel.service
+systemd disable bithday-bot-devel.service
 systemctl daemon-reload
-cp deploy/systemd/bithday-bot.service /etc/systemd/system/
-systemd enable bithday-bot.service
+cp deploy/systemd/bithday-bot-devel.service /etc/systemd/system/
+systemd enable bithday-bot-devel.service
 systemctl daemon-reload
