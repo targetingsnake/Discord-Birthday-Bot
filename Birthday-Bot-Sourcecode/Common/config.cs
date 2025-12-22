@@ -8,7 +8,7 @@ namespace Common.Cfg
 {
     public class config
     {
-        public config(string sQlPassword, string sQlUser, string sQlServer, string sQLSchema, string discordToken, IList<ulong> DcMaster)
+        public config(string sQlPassword, string sQlUser, string sQlServer, string sQLSchema, string discordToken, IList<ulong> DcMaster, string[] _BirthdayWhishes)
         {
             SQlPassword = sQlPassword;
             SQlUser = sQlUser;
@@ -21,6 +21,7 @@ namespace Common.Cfg
                 dcm[j] = DcMaster[j];
             }
             MasterDiscord = dcm;
+            BirthdayWhishes = _BirthdayWhishes;
         }
 
         public string SQlPassword { get; init; }
@@ -29,6 +30,7 @@ namespace Common.Cfg
         public string SQlServer { get; init; }
         public string DiscordToken { get; init; }
         public ulong[] MasterDiscord { get; init; }
+        public string[] BirthdayWhishes { get; init; }
     }
 
     

@@ -16,13 +16,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Common.Cfg;
 //using System.Xml;
 
 namespace Discord
 {
     public class Discord
     {
-        public static Task Main(string token, ulong[] masters) => new Discord().MainAsync(token, masters);
+        public static Task Main(config cfg) => new Discord().MainAsync(cfg);
 
         private Task Log(LogMessage msg)
         {
@@ -30,13 +31,28 @@ namespace Discord
             return Task.CompletedTask;
         }
 
-        private DiscordSocketClient _client = null;
+        private static DiscordSocketClient _client = null;
+        private config config = null;
+
+        Thread postLoop = null;
+
+        public static DiscordSocketClient instanz
+        {
+            get
+            {
+                if (_client == null)
+                {
+                    throw new NullReferenceException();
+                }
+                return _client;
+            }
+        }
 
         private ulong[] _Masters = { };
 
-        private async Task MainAsync(string token, ulong[] masters)
+        private async Task MainAsync(config cfg)
         {
-
+            config = cfg;
             DiscordSocketConfig socketCfg = new DiscordSocketConfig
             {
                 WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.GetSystemWebProxy()),
@@ -46,16 +62,18 @@ namespace Discord
             _client = new DiscordSocketClient(socketCfg);
             Console.WriteLine("Initialising");
 
-            _Masters = masters;
+            _Masters = cfg.MasterDiscord;
             
             _client.Log += Log;
 
-            await _client.LoginAsync(TokenType.Bot, token);
+            await _client.LoginAsync(TokenType.Bot, cfg.DiscordToken);
             await _client.StartAsync();
 
             _client.Ready += Client_Ready;
             _client.SlashCommandExecuted += SlashCommandHandler;
 
+            postLoop = new Thread(PostLoop.Instance.postLoop);
+            
             // Block this task until the program is closed.
             await Task.Delay(-1);
         }
@@ -158,6 +176,10 @@ namespace Discord
 
                 // You can send this error somewhere or just print it to the console, for this example we're just going to print it.
                 Console.WriteLine(json);
+            }
+            if (postLoop.ThreadState != ThreadState.Running)
+            {
+                postLoop.Start(config);
             }
         }
 

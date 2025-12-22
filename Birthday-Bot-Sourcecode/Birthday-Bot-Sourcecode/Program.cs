@@ -19,7 +19,7 @@ namespace BotMaster
             WebRequest.DefaultWebProxy = WebRequest.GetSystemWebProxy();
             Console.WriteLine(WebRequest.DefaultWebProxy);
 
-            var t = Task.Run(() => Discord.Discord.Main(cfg.DiscordToken, cfg.MasterDiscord));
+            var t = Task.Run(() => Discord.Discord.Main(cfg));
             t.Wait();
         }
     }
