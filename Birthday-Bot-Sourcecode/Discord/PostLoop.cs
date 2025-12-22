@@ -18,7 +18,7 @@ namespace Discord
     internal class PostLoop
     {
         private ConcurrentDictionary<ulong, ulong> map = null;
-        private TimeSpan loop_wait = new TimeSpan(0, 5, 0);
+        private TimeSpan loop_wait = new TimeSpan(0, 0, 30); //ToDo Set to 0, 5, 0 for production
         private string[] birthdayWishes = null;
 
         private PostLoop()
@@ -87,7 +87,11 @@ namespace Discord
             }
             foreach (ulong server_id in server_ids)
             {
-                mapping[server_id] = DatabaseConnector.instanze.getChannel(server_id);
+                ulong ChannelID = DatabaseConnector.instanze.getChannel(server_id);
+                if (ChannelID == 0)
+                {
+                    mapping[server_id] = DatabaseConnector.instanze.getChannel(server_id);
+                }
             }
             Console.WriteLine("Posting Loop Map initialized");
             map = mapping;
