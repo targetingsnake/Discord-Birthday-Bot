@@ -18,4 +18,17 @@ namespace Common
             return birthday;
         }
     }
+
+    public struct Birthday
+    {
+        public Birthday(ulong _userID, long _lastPosted, int _year)
+        {
+            userID = _userID;
+            lastPosted = _lastPosted;
+            year = _year;
+        }
+        public ulong userID;
+        public long lastPosted;
+        public int year;
+    }
 }

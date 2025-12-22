@@ -1,4 +1,5 @@
 ﻿using Common.Cfg;
+using Common;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
@@ -185,6 +186,48 @@ namespace Database.Con
                 return null;
             }
             return result;
+        }
+
+        public List<Birthday> getBirthdays(ulong serverID)
+        {
+            DateTime today = DateTime.Now;
+            List<Birthday> users = new List<Birthday>();
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "Select uid, lastPosted, year from birthdays where guid = @guid and day = @day and month = @month  ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@guid", serverID);
+            cmd.Parameters.AddWithValue("@day", today.Day);
+            cmd.Parameters.AddWithValue("@month", today.Month);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            try
+            {
+                while (reader.Read())
+                {
+                     users.Add(new Birthday(reader.GetUInt64(0), reader.GetInt64(1), reader.GetInt32(2)));
+                }
+            }
+            catch
+            {
+                Console.WriteLine($"Something is wrong on {serverID.ToString()} and has triggered an error.");
+            }
+            finally
+            {
+                reader.Close();
+            }
+            return users;
+        }
+
+        public void setLastPosted(ulong guildID, ulong userid, long timestamp)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "UPDATE birthdays SET lastPosted = @lastPosted where guid = @guildid and uid = @userid ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@guildid", guildID);
+            cmd.Parameters.AddWithValue("@userid", userid);
+            cmd.Parameters.AddWithValue("@lastPosted", timestamp);
+            cmd.ExecuteNonQuery();
         }
     }
 }

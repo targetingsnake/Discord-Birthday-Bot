@@ -41,7 +41,8 @@ namespace BotMaster
             InternalConfig cfg = JsonSerializer.Deserialize<InternalConfig>(jsonString)!;
 
             if (cfg.DiscordToken is null || cfg.SQlPassword is null
-                || cfg.SQlServer is null || cfg.SQlUser is null || cfg.MasterDiscord is null || cfg.SQLSchema is null)
+                || cfg.SQlServer is null || cfg.SQlUser is null || cfg.MasterDiscord is null || cfg.SQLSchema is null 
+                || cfg.BirthdayWhishes is null )
             {
                 throw new DataException();
             }
@@ -61,7 +62,7 @@ namespace BotMaster
                 DcMaster += t.ToString();
             }
             Console.WriteLine($"DC-Master: {DcMaster}");
-            config Fcfg = new config(cfg.SQlPassword, cfg.SQlUser, cfg.SQlServer, cfg.SQLSchema, cfg.DiscordToken, cfg.MasterDiscord);
+            config Fcfg = new config(cfg.SQlPassword, cfg.SQlUser, cfg.SQlServer, cfg.SQLSchema, cfg.DiscordToken, cfg.MasterDiscord, cfg.BirthdayWhishes);
 
             return Fcfg;
         }
@@ -85,5 +86,6 @@ namespace BotMaster
         public string? SQlServer { get; set; }
         public string? DiscordToken { get; set; }
         public IList<ulong>? MasterDiscord { get; set; }
+        public string[]? BirthdayWhishes { get; set; }
     }
 }
