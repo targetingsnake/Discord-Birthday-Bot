@@ -5,5 +5,26 @@
   "SQlPassword": "pwd",
   "DiscordToken": "TokenDc",
   "MasterDiscord": [],
-  "Hosts": []
+  "BirthdayWhishes": [
+    "Happy Birthday, %user%!",
+    "Alles Gute zum Geburtstag, %user%!",
+    "Herzlichen Glückwunsch, %user%!",
+    "Lass dich heute feiern, %user%.",
+    "Alles Gute und einen tollen Tag, %user%!",
+    "Feier schön, %user%!",
+    "Nur das Beste zum Geburtstag, %user%.",
+    "Glück, Gesundheit und Erfolg, %user%!",
+    "Einen großartigen Geburtstag für dich, %user%.",
+    "Heute ist dein Tag – alles Gute, %user%!",
+    "Happy B-Day, %user%!",
+    "Feier ordentlich und genieß den Tag, %user%.",
+    "Alles Liebe zum Geburtstag, %user%.",
+    "Mögen all deine Wünsche wahr werden, %user%.",
+    "Herzliche Geburtstagsgrüße, %user%!",
+    "Einen entspannten und schönen Geburtstag, %user%.",
+    "Bleib wie du bist – alles Gute, %user%!",
+    "Auf ein neues Lebensjahr, %user%.",
+    "Einen richtig guten Geburtstag, %user%!",
+    "Schön, dass es dich gibt. Alles Gute, %user%!"
+  ]
 }
