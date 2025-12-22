@@ -56,13 +56,12 @@ include:
 - template: Jobs/SAST.gitlab-ci.yml
 - template: Jobs/Secret-Detection.gitlab-ci.yml
 
-deploy_enroleBot_dev:
+deploy_enroleBot_prod:
   stage: deploy
   tags:
     - deployment-birthday-bot
   only:
     - master-publish
-    - tags
   needs:
     - build:compileCommander_dev
     - build:compileCommander_prod
@@ -80,4 +79,27 @@ deploy_enroleBot_dev:
     - sudo cp /etc/birthday-bot/overwrite.json /opt/birthday-bot/overwrite.json
     - sudo chmod -Rv 777 /opt/birthday-bot/
     - sudo systemctl start bithday-bot.service
-#  when: manual
+
+deploy_enroleBot_dev:
+  stage: deploy
+  tags:
+    - deployment-birthday-bot
+  only:
+    - development
+  needs:
+    - build:compileCommander_dev
+    - build:compileCommander_prod
+    - secret_detection
+    - semgrep-sast
+  dependencies:
+    - build:compileCommander_prod
+  script:
+    - chmod +x deploy/bash/install-devel.sh
+    - sudo ./deploy/bash/install-devel.sh
+    - sudo systemctl stop bithday-bot-devel.service
+    - sudo mkdir -p /opt/birthday-bot-devel
+    - sudo rm -Rv /opt/birthday-bot-devel/* || true
+    - sudo cp -Rv result-release/* /opt/birthday-bot-devel/
+    - sudo cp /etc/birthday-bot-devel/dev.overwrite.json /opt/birthday-bot-devel/dev.overwrite.json
+    - sudo chmod -Rv 777 /opt/birthday-bot-devel/
+    - sudo systemctl start bithday-bot-devel.service
