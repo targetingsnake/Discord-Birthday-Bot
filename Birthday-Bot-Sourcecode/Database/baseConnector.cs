@@ -54,15 +54,7 @@ namespace Database.Con
 
         public void setBirthday(ulong guildID, ulong userid, long day, long month)
         {
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = connection;
-            cmd.CommandText = "INSERT INTO birthdays (uid, guid, day, month) VALUES ( @userid , @guildid , @day , @month ) ON DUPLICATE KEY UPDATE uid = @userid , guid = @guildid , day = @day , month = @month , year = NULL ;";
-            cmd.Prepare();
-            cmd.Parameters.AddWithValue("@guildid", guildID);
-            cmd.Parameters.AddWithValue("@userid", userid);
-            cmd.Parameters.AddWithValue("@day", day);
-            cmd.Parameters.AddWithValue("@month", month);
-            cmd.ExecuteNonQuery();
+            setBirthday(guildID, userid, day, month, -1);
         }
 
         public void deleteBirthday(ulong guildID, ulong userid)
