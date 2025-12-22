@@ -15,7 +15,7 @@ build:compileCommander_dev:
     - cp -Rv Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Debug/net*/* result/
   only:
     - /^dev/.*$/i
-    - Development
+    - development
     - main
     - master
     - master-publish
