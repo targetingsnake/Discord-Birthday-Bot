@@ -38,6 +38,7 @@ build:compileCommander_prod:
     - chown -Rv 998:998 result-release
   only:
     - master
+    - development
     - master-publish
     - tags
   artifacts:
