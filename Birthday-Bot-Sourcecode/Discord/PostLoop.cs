@@ -106,11 +106,11 @@ namespace Discord
             foreach (ulong server_id in server_ids)
             {
                 SocketGuild discordServer = Discord.instanz.GetGuild(server_id);
-                SocketChannel[] serverChannels = discordServer.Channels.ToArray();
+                SocketTextChannel[] serverChannels = discordServer.TextChannels.ToArray();
                 List<ulong> channelIds = new List<ulong>();
-                foreach (SocketChannel channel in serverChannels)
+                foreach (SocketTextChannel channel in serverChannels)
                 {
-                    channelIds.Add(channel.Id); 
+                    channelIds.Add(channel.Id);
                 }
                 ulong ChannelID = DatabaseConnector.instanze.getChannel(server_id);
                 if (ChannelID != 0 && channelIds.Contains(ChannelID))
@@ -119,7 +119,27 @@ namespace Discord
                 }
                 else
                 {
-                    mapping[server_id] = discordServer.SystemChannel.Id;
+                    string servername = discordServer.Name;
+                    SocketTextChannel systemChannel = discordServer.SystemChannel;
+                    SocketTextChannel defaultChannel = discordServer.DefaultChannel;
+                    if (systemChannel != null)
+                    {
+                        Console.WriteLine($"Using System Channel of Server {servername}");
+                        mapping[server_id] = systemChannel.Id;
+                    }
+                    else if (defaultChannel != null)
+                    {
+                        Console.WriteLine($"Using Default Channel of Server {servername}");
+                        mapping[server_id] = defaultChannel.Id;
+                    }
+                    else
+                    {
+                        if (serverChannels.Length > 0)
+                        {
+                            Console.WriteLine($"Using {serverChannels[0].Name} Channel of Server {servername}");
+                            mapping[server_id] |= serverChannels[0].Id;
+                        }
+                    }
                 }
                     
             }
