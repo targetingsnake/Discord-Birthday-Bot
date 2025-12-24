@@ -31,4 +31,15 @@ namespace Common
         public long lastPosted;
         public int year;
     }
+
+    public struct postTime
+    {
+        public postTime(int _postHour, int _postMinute)
+        {
+            postHour = _postHour;
+            postMinute = _postMinute;
+        }
+        public int postHour { get; private set; }
+        public int postMinute { get; private set; }
+    }
 }

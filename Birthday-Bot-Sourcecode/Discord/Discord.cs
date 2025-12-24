@@ -74,7 +74,6 @@ namespace Discord
             _client.JoinedGuild += TryAddGuildCommands;
 
 
-
             postLoop = new Thread(PostLoop.Instance.postLoop);
             
             // Block this task until the program is closed.
@@ -176,8 +175,8 @@ namespace Discord
             var globalCommand_setBirthday = new SlashCommandBuilder();
             globalCommand_setBirthday.WithName("geburtstag");
             globalCommand_setBirthday.WithDescription("Hier kannst du deinen Geburtstag hinzufügen");
-            globalCommand_setBirthday.AddOption(monthOption);
             globalCommand_setBirthday.AddOption(dayOption);
+            globalCommand_setBirthday.AddOption(monthOption);
             globalCommand_setBirthday.AddOption(yearOption);
             applicationCommandPropertiesGuild.Add(globalCommand_setBirthday.Build());
 
@@ -185,6 +184,27 @@ namespace Discord
             globalCommand_deleteBirthday.WithName("vergissmich");
             globalCommand_deleteBirthday.WithDescription("Hiermit kannst du deinen Geburtstag");
             applicationCommandPropertiesGuild.Add(globalCommand_deleteBirthday.Build());
+
+            var hourOption = new SlashCommandOptionBuilder()
+                .WithName("stunde")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithMaxValue(24)
+                .WithMinValue(0)
+                .WithDescription("Stunde zu der Geposted werden soll.")
+                .WithRequired(true);
+            var minuteOption = new SlashCommandOptionBuilder()
+                .WithName("minute")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithMaxValue(59)
+                .WithMinValue(0)
+                .WithDescription("Minute zu der Geposted werden soll.")
+                .WithRequired(true);
+            var globalCommand_setTime = new SlashCommandBuilder();
+            globalCommand_setTime.WithName("set_time");
+            globalCommand_setTime.WithDescription("Hier kann der Moderator oder Server-Owner die Post-Zeit einstellen.");
+            globalCommand_setTime.AddOption(hourOption);
+            globalCommand_setTime.AddOption(minuteOption);
+            applicationCommandPropertiesGuild.Add(globalCommand_setTime.Build());
 
             var modRoleOption = new SlashCommandOptionBuilder()
                 .WithName("modrole")
@@ -418,6 +438,35 @@ namespace Discord
                     embeds[0] = emb.Build();
                     await command.RespondAsync("", embeds);
                     PostLoop.Instance.reloadMap();
+                    break;
+                case "set_time":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!mod)
+                    {
+                        await command.RespondAsync($"Der Command muss durch einen Mod ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    int hour = 0;
+                    int minute = 0;
+                    foreach (SocketSlashCommandDataOption option in command.Data.Options)
+                    {
+                        switch (option.Name)
+                        {
+                            case "stunde":
+                                hour = (int)option.Value;
+                                break;
+                            case "minute":
+                                minute = (int)option.Value;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");

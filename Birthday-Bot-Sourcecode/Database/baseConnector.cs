@@ -90,6 +90,18 @@ namespace Database.Con
             cmd.ExecuteNonQuery();
         }
 
+        public void setTime(ulong guildID, int hour, int minute)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "INSERT INTO server (posthour, postminute, guid) VALUES ( @posthour , @postminute , @guildid ) ON DUPLICATE KEY UPDATE posthour = @posthour , postminute = @postminute ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@guildid", guildID);
+            cmd.Parameters.AddWithValue("@posthour", hour);
+            cmd.Parameters.AddWithValue("@postminute", minute);
+            cmd.ExecuteNonQuery();
+        }
+
         public ulong getMod(ulong guildID)
         {
             MySqlCommand cmd = new MySqlCommand();
@@ -130,6 +142,33 @@ namespace Database.Con
                 while (reader.Read())
                 {
                     result = reader.GetUInt64(0);
+                }
+            }
+            catch
+            {
+                Console.WriteLine($"Channel for Discord {guildID.ToString()} not set.");
+            }
+            finally
+            {
+                reader.Close();
+            }
+            return result;
+        }
+
+        public postTime getPostTime(ulong guildID)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "Select posthour, postminute from server where guid = @guildid ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@guildid", guildID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            postTime result = new postTime(0, 0);
+            try
+            {
+                while (reader.Read())
+                {
+                    result = new postTime(reader.GetInt32("posthour"), reader.GetInt32("postminute"));
                 }
             }
             catch
@@ -196,7 +235,7 @@ namespace Database.Con
             {
                 while (reader.Read())
                 {
-                     users.Add(new Birthday(reader.GetUInt64(0), reader.GetInt64(1), reader.GetInt32(2)));
+                    users.Add(new Birthday(reader.GetUInt64(0), reader.GetInt64(1), reader.GetInt32(2)));
                 }
             }
             catch

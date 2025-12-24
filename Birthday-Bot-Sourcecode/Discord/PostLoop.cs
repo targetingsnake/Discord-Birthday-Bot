@@ -18,6 +18,7 @@ namespace Discord
     internal class PostLoop
     {
         private ConcurrentDictionary<ulong, ulong> map = null;
+        private ConcurrentDictionary<ulong, postTime> mapPostTIme = null;
         private TimeSpan loop_wait = new TimeSpan(0, 0, 30); //ToDo Set to 0, 5, 0 for production
         private string[] birthdayWishes = null;
 
@@ -36,6 +37,8 @@ namespace Discord
         public void postLoop(object cfg)
         {
             updateMap();
+            updateTimeMap();
+            Discord.instanz.ChannelDestroyed += ChannelDestroyed;
             if (cfg.GetType() != typeof(config))
             {
                 throw new Exception("Type missmatch");
@@ -51,7 +54,9 @@ namespace Discord
                         DatabaseConnector.instanze.setChannel(server, 0);
                         updateMap();
                     }
-                    postBirthdays(server, map[server]);
+                    if (mapPostTIme[server].postHour >= DateTime.Now.Hour && mapPostTIme[server].postMinute >= DateTime.Now.Minute){
+                        postBirthdays(server, map[server]);
+                    }
                 }
                 Thread.Sleep(loop_wait);
             }
@@ -147,9 +152,40 @@ namespace Discord
             map = mapping;
         }
 
+        private void updateTimeMap()
+        {
+            ConcurrentDictionary<ulong, postTime> mapping = new ConcurrentDictionary<ulong, postTime>();
+            SocketGuild[] servers = Discord.instanz.Guilds.ToArray();
+            List<ulong> server_ids = new List<ulong>();
+            foreach (SocketGuild server in servers)
+            {
+                ulong id = server.Id;
+                server_ids.Add(id);
+            }
+            foreach (ulong id in server_ids)
+            {
+                postTime time = DatabaseConnector.instanze.getPostTime(id);
+                mapping[id] = time;
+            }
+            Console.WriteLine("Post time dict updated");
+            mapPostTIme = mapping;
+        }
+
         public void reloadMap()
         {
             Console.WriteLine("Channel changed");
+            updateMap();
+        }
+
+        public void reloadTimes()
+        {
+            Console.WriteLine("Time changed");
+            updateTimeMap();
+        }
+
+        public async Task ChannelDestroyed(SocketChannel channel)
+        {
+            Console.WriteLine("Channel destroyed");
             updateMap();
         }
     }
