@@ -42,7 +42,7 @@ namespace BotMaster
 
             if (cfg.DiscordToken is null || cfg.SQlPassword is null
                 || cfg.SQlServer is null || cfg.SQlUser is null || cfg.MasterDiscord is null || cfg.SQLSchema is null 
-                || cfg.BirthdayWhishes is null )
+                || cfg.BirthdayWhishes is null || cfg.Debug is null || cfg.BirthdayWishesAge is null)
             {
                 throw new DataException();
             }
@@ -61,8 +61,11 @@ namespace BotMaster
                 }
                 DcMaster += t.ToString();
             }
+            int _debug = cfg.Debug is null ? 0 : 1;
+            string debugText = _debug == 1 ? "enabled" : "disabled";
+            Console.WriteLine($"Debug-Mode: {debugText}");
             Console.WriteLine($"DC-Master: {DcMaster}");
-            config Fcfg = new config(cfg.SQlPassword, cfg.SQlUser, cfg.SQlServer, cfg.SQLSchema, cfg.DiscordToken, cfg.MasterDiscord, cfg.BirthdayWhishes);
+            config Fcfg = new config(cfg.SQlPassword, cfg.SQlUser, cfg.SQlServer, cfg.SQLSchema, cfg.DiscordToken, cfg.MasterDiscord, cfg.BirthdayWhishes, cfg.BirthdayWishesAge, _debug);
 
             return Fcfg;
         }
@@ -87,5 +90,7 @@ namespace BotMaster
         public string? DiscordToken { get; set; }
         public IList<ulong>? MasterDiscord { get; set; }
         public string[]? BirthdayWhishes { get; set; }
+        public string[]? BirthdayWishesAge { get; set; }
+        public int? Debug {  get; set; }   
     }
 }

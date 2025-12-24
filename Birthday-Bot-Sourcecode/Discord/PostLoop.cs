@@ -21,6 +21,8 @@ namespace Discord
         private ConcurrentDictionary<ulong, postTime> mapPostTIme = null;
         private TimeSpan loop_wait = new TimeSpan(0, 0, 30); //ToDo Set to 0, 5, 0 for production
         private string[] birthdayWishes = null;
+        private string[] birthdayWishesAge = null;
+        private config config;
 
         private PostLoop()
         {
@@ -38,12 +40,13 @@ namespace Discord
         {
             updateMap();
             updateTimeMap();
-            Discord.instanz.ChannelDestroyed += ChannelDestroyed;
             if (cfg.GetType() != typeof(config))
             {
                 throw new Exception("Type missmatch");
             }
-            birthdayWishes = ((config)cfg).BirthdayWhishes;
+            config = (config)cfg;
+            birthdayWishes = config.BirthdayWhishes;
+            birthdayWishesAge= config.BirthdayWishesAge;
             while (true)
             {
                 foreach (ulong server in map.Keys)
@@ -54,7 +57,8 @@ namespace Discord
                         DatabaseConnector.instanze.setChannel(server, 0);
                         updateMap();
                     }
-                    if (mapPostTIme[server].postHour >= DateTime.Now.Hour && mapPostTIme[server].postMinute >= DateTime.Now.Minute){
+                    if (DateTime.Now.Hour >= mapPostTIme[server].postHour && DateTime.Now.Minute >= mapPostTIme[server].postMinute)
+                    {
                         postBirthdays(server, map[server]);
                     }
                 }
@@ -67,17 +71,46 @@ namespace Discord
             Console.WriteLine($"Posting Birthdays for Server {Discord.instanz.GetGuild(serverId).Name}");
             List<Birthday> birthdayList = DatabaseConnector.instanze.getBirthdays(serverId);
             DateTime today = DateTime.Now;
-            foreach (Birthday user in birthdayList){
-                long lastPostedDB = user.lastPosted == -1 ? DateTime.MinValue.Ticks : user.lastPosted;
+            List<Birthday> post_needed = new List<Birthday>();
+            SocketGuild guild = Discord.instanz.GetGuild(serverId);
+            foreach (Birthday user in birthdayList)
+            {
+                long lastPostedDB = user.lastPosted < DateTime.MinValue.Ticks ? DateTime.MinValue.Ticks : user.lastPosted;
                 DateTime lastPosted = new DateTime(lastPostedDB);
                 if (!(lastPosted.Day == today.Day && lastPosted.Month == today.Month && lastPosted.Year == today.Year))
                 {
-                    Discord.instanz.GetGuild(serverId).GetTextChannel(channelId).SendMessageAsync(CreateEmbed(user.userID));
-                    DatabaseConnector.instanze.setLastPosted(serverId, user.userID, today.Ticks);
-                } else
-                {
-                    Console.WriteLine($"Birthday already Posted today for user {Discord.instanz.GetUser(user.userID).GlobalName}");
+                    post_needed.Add(user);
                 }
+                else if (config.debug)
+                {
+                    Console.WriteLine($"Birthday already Posted today for user {guild.GetUser(user.userID).GlobalName}");
+                }
+            }
+            if (post_needed.Count == 0)
+            {
+                if (config.debug)
+                {
+                    Console.WriteLine($"no Birthday Post needed for Server {guild.Name}");
+                }
+                return;
+            }
+            IReadOnlyCollection<SocketGuildUser> guildUsers = guild.Users;
+            foreach (Birthday user in post_needed)
+            {
+                List<ulong> userIds = new List<ulong>();
+                foreach (SocketGuildUser guser in guildUsers)
+                {
+                    userIds.Add(guser.Id);
+                }
+                if (userIds.Contains(user.userID) == false)
+                {
+
+                    DatabaseConnector.instanze.deleteBirthday(serverId, user.userID);
+                    Console.WriteLine($"User {user.userID} is not in guild {guild.Name} anymore");
+                    continue;
+                }
+                Discord.instanz.GetGuild(serverId).GetTextChannel(channelId).SendMessageAsync(CreateEmbed(user));
+                DatabaseConnector.instanze.setLastPosted(serverId, user.userID, today.Ticks);
             }
         }
 
@@ -93,11 +126,20 @@ namespace Discord
             return channelIds.Contains(ChannelId);
         }
 
-        private string CreateEmbed(ulong userID)
-        {            
+        private string CreateEmbed(Birthday user)
+        {
             Random random = new Random();
-            string wishes = birthdayWishes[random.Next(0, birthdayWishes.Length)];
-            wishes = wishes.Replace("%user%", $"<@{userID.ToString()}>");
+            string wishes = "";
+            int thisYear = DateTime.Now.Year;
+            if (user.year < (thisYear - 120))
+            {
+                wishes = birthdayWishes[random.Next(0, birthdayWishes.Length)];
+            } else
+            {
+                wishes = birthdayWishesAge[random.Next(0, birthdayWishesAge.Length)];
+                wishes = wishes.Replace("%age%", (thisYear-user.year).ToString());
+            }
+            wishes = wishes.Replace("%user%", $"<@{user.userID.ToString()}>");
             return wishes;
         }
 
@@ -149,7 +191,7 @@ namespace Discord
                         }
                     }
                 }
-                    
+
             }
             Console.WriteLine("Posting Loop Map initialized");
             map = mapping;

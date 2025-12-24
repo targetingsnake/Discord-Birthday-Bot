@@ -5,6 +5,7 @@
   "SQlPassword": "pwd",
   "DiscordToken": "TokenDc",
   "MasterDiscord": [],
+  "Debug":  0,
   "BirthdayWhishes": [
     "Happy Birthday, %user%!",
     "Alles Gute zum Geburtstag, %user%!",
@@ -26,5 +27,27 @@
     "Auf ein neues Lebensjahr, %user%.",
     "Einen richtig guten Geburtstag, %user%!",
     "Schön, dass es dich gibt. Alles Gute, %user%!"
+  ],
+  "BirthdayWishesAge": [
+    "Happy Birthday, %user%! Heute ist dein %age%. Geburtstag!",
+    "Alles Gute zum %age%. Geburtstag, %user%!",
+    "Herzlichen Glückwunsch zum %age%. Geburtstag, %user%!",
+    "Heute feierst du deinen %age%. Geburtstag – alles Gute, %user%!",
+    "Alles Gute zum %age%. Geburtstag! Lass dich feiern, %user%!",
+    "Zum %age%. Geburtstag nur das Beste für dich, %user%!",
+    "Feier deinen %age%. Geburtstag ordentlich, %user%!",
+    "Glückwunsch zu deinem %age%. Geburtstag, %user%!",
+    "Heute ist dein %age%. Geburtstag. Genieß den Tag, %user%!",
+    "Alles Gute und einen tollen %age%. Geburtstag, %user%!",
+    "Herzliche Grüße zu deinem %age%. Geburtstag, %user%!",
+    "Happy B-Day, %user%! Willkommen zu deinem %age%. Geburtstag!",
+    "Mögen all deine Wünsche an deinem %age%. Geburtstag wahr werden, %user%!",
+    "Auf deinen %age%. Geburtstag – alles Gute, %user%!",
+    "Feier schön deinen %age%. Geburtstag, %user%!",
+    "Alles Liebe zu deinem %age%. Geburtstag, %user%!",
+    "Ein Hoch auf deinen %age%. Geburtstag, %user%!",
+    "Bleib wie du bist – alles Gute zum %age%. Geburtstag, %user%!",
+    "Einen großartigen %age%. Geburtstag für dich, %user%!",
+    "Schön, dass es dich gibt. Alles Gute zum %age%. Geburtstag, %user%!"
   ]
 }

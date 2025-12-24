@@ -1,6 +1,7 @@
-﻿using Database;
+﻿using Common;
+using Common.Cfg;
+using Database;
 using Database.Con;
-using Common;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
@@ -14,9 +15,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Common.Cfg;
 //using System.Xml;
 
 namespace Discord
@@ -56,26 +57,30 @@ namespace Discord
             DiscordSocketConfig socketCfg = new DiscordSocketConfig
             {
                 WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.GetSystemWebProxy()),
-                UdpSocketProvider = DefaultUdpSocketProvider.Instance
+                UdpSocketProvider = DefaultUdpSocketProvider.Instance,
+                AlwaysDownloadUsers = true,
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
             };
 
             _client = new DiscordSocketClient(socketCfg);
+
             Console.WriteLine("Initialising");
 
             _Masters = cfg.MasterDiscord;
-            
-            _client.Log += Log;
 
+            _client.Log += Log;
             await _client.LoginAsync(TokenType.Bot, cfg.DiscordToken);
             await _client.StartAsync();
 
             _client.Ready += Client_Ready;
             _client.SlashCommandExecuted += SlashCommandHandler;
             _client.JoinedGuild += TryAddGuildCommands;
+            _client.UserLeft += UserLeft;
+            _client.ChannelDestroyed += PostLoop.Instance.ChannelDestroyed;
 
 
             postLoop = new Thread(PostLoop.Instance.postLoop);
-            
+
             // Block this task until the program is closed.
             await Task.Delay(-1);
         }
@@ -131,6 +136,12 @@ namespace Discord
             {
                 postLoop.Start(config);
             }
+        }
+
+        private async Task UserLeft(SocketGuild guild, SocketUser user)
+        {
+            DatabaseConnector.instanze.deleteBirthday(guild.Id, user.Id);
+            Console.WriteLine($"User {user.GlobalName} left Server {guild.Name}. Birthday deleted.");
         }
 
         private async Task TryAddGuildCommands(SocketGuild guild)
@@ -250,7 +261,7 @@ namespace Discord
                         }
                     }
                 }
-                if(!mod)
+                if (!mod)
                 {
                     SocketUser owner = _client.GetGuild(command.GuildId.Value).Owner;
                     if (owner.Id == command.User.Id)
@@ -304,11 +315,12 @@ namespace Discord
                     emb.WithFields(field);
                     int[] birthday_array = DatabaseConnector.instanze.getBirthday(command.User.Id);
                     field_birthday.WithName("Geburtstag");
-                    if (birthday_array !=  null)
+                    if (birthday_array != null)
                     {
                         string birthday = helper.intArrayToBorthdayString(birthday_array);
                         field_birthday.WithValue(birthday);
-                    } else
+                    }
+                    else
                     {
                         field_birthday.WithValue("nicht angegeben");
                     }
@@ -347,6 +359,24 @@ namespace Discord
                                 break;
                             default:
                                 break;
+                        }
+                    }
+                    if (!staticData.calendar.ContainsKey(month))
+                    {
+                        await command.RespondAsync($"Bitte gib einen korrekten Monat ein!", null, false, true);
+                        break;
+                    }
+                    if (!(day > 0 && day <= staticData.calendar[month]))
+                    {
+                        if (day == 29 && month == 2)
+                        {
+                            await command.RespondAsync("Bitte wähle entweder den 01.03 oder den 28.02. als Benachricitgungsdatum für deinen Geburtstag aus.", null, false, true, null);
+                            break;
+                        }
+                        else
+                        {
+                            await command.RespondAsync($"Diesen Tag gibt es nicht in diesem Monat. Bitte wähle einen existenten Tag aus.", null, false, true);
+                            break;
                         }
                     }
                     if (year == -1)
@@ -432,7 +462,7 @@ namespace Discord
                     emb.WithTitle("set_channel");
                     EmbedFieldBuilder field_channel = new EmbedFieldBuilder();
                     field_channel.WithName("Channel");
-                    SocketTextChannel channel = (SocketTextChannel) command.Channel;
+                    SocketTextChannel channel = (SocketTextChannel)command.Channel;
                     field_channel.WithValue($"{channel.Mention}");
                     emb.WithFields(field_channel);
                     embeds[0] = emb.Build();
