@@ -61,7 +61,7 @@ include:
 deploy_enroleBot_prod:
   stage: deploy
   tags:
-    - deployment-birthday-bot
+    - deployment-birthday-bot-prod
   only:
     - master-publish
   needs:
@@ -74,18 +74,18 @@ deploy_enroleBot_prod:
   script:
     - chmod +x deploy/bash/install.sh
     - sudo ./deploy/bash/install.sh
-    - sudo systemctl stop bithday-bot.service
+    - sudo systemctl stop birthday-bot.service
     - sudo mkdir -p /opt/birthday-bot
     - sudo rm -Rv /opt/birthday-bot/* || true
     - sudo cp -Rv result-release/* /opt/birthday-bot/
     - sudo cp /etc/birthday-bot/overwrite.json /opt/birthday-bot/overwrite.json
     - sudo chmod -Rv 777 /opt/birthday-bot/
-    - sudo systemctl start bithday-bot.service
+    - sudo systemctl start birthday-bot.service
 
 deploy_enroleBot_dev:
   stage: deploy
   tags:
-    - deployment-birthday-bot
+    - deployment-birthday-bot-dev
   only:
     - development
   needs:
@@ -98,13 +98,13 @@ deploy_enroleBot_dev:
   script:
     - chmod +x deploy/bash/install-devel.sh
     - sudo ./deploy/bash/install-devel.sh
-    - sudo systemctl stop bithday-bot-devel.service
+    - sudo systemctl stop birthday-bot-devel.service
     - sudo mkdir -p /opt/birthday-bot-devel
     - sudo rm -Rv /opt/birthday-bot-devel/* || true
     - sudo cp -Rv result-release/* /opt/birthday-bot-devel/
     - sudo cp /etc/birthday-bot/dev.overwrite.json /opt/birthday-bot-devel/dev.overwrite.json
     - sudo chmod -Rv 777 /opt/birthday-bot-devel/
-    - sudo systemctl start bithday-bot-devel.service
+    - sudo systemctl start birthday-bot-devel.service
 
 release_job:
   stage: release
