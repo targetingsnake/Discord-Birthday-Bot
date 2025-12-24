@@ -451,17 +451,17 @@ namespace Discord
                         break;
                     }
                     ServerId = command.GuildId.Value;
-                    int hour = 0;
-                    int minute = 0;
+                    long hour = 0;
+                    long minute = 0;
                     foreach (SocketSlashCommandDataOption option in command.Data.Options)
                     {
                         switch (option.Name)
                         {
                             case "stunde":
-                                hour = (int)option.Value;
+                                hour = (long)option.Value;
                                 break;
                             case "minute":
-                                minute = (int)option.Value;
+                                minute = (long)option.Value;
                                 break;
                             default:
                                 break;
