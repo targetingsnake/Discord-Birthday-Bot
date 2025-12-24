@@ -74,6 +74,9 @@ namespace Discord
                 {
                     Discord.instanz.GetGuild(serverId).GetTextChannel(channelId).SendMessageAsync(CreateEmbed(user.userID));
                     DatabaseConnector.instanze.setLastPosted(serverId, user.userID, today.Ticks);
+                } else
+                {
+                    Console.WriteLine($"Birthday already Posted today for user {Discord.instanz.GetUser(user.userID).GlobalName}");
                 }
             }
         }
