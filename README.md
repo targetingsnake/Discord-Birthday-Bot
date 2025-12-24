@@ -15,3 +15,24 @@ Just click the [Link](https://discord.com/oauth2/authorize?client_id=14502003968
 4. Notify users that they now can use `/geburtstag` to add their birthday and `/vergissmich` to remove their birthdy.
 
 ## Commands
+
+| Command      | Description | Parameter |
+| ----------- | ----------- | ----------- |
+| `/geburtstag`      | Sets birthday for executing user       | Needs Day and Month, Year is optional |
+| `/vergissmich`   | removes birthday of user for this server        | None |
+| `/infome`   | shows all Information the bot has from you on the server it is executed on        | None |
+| `/endmod`   | sets mod role for bot        | Tagged custom role |
+| `/set_channel`   | Selects channel the command is executed in for bot messages        | None |
+| `/set_time hour minute` | Sets time for birthday posts | hour and minute as integer |
+
+## Features
+
+- Posts only birthdays from people an your Server, which added their birthday via your server
+- Channel for posts selectable
+- customizable time for post
+- minimal number of permissions needed
+
+## Support
+
+- via Github-Issues
+- via [Discord](https://discord.gg/p4edQRUbRt)
