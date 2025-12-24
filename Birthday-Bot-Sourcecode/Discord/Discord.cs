@@ -1,6 +1,7 @@
-﻿using Database;
+﻿using Common;
+using Common.Cfg;
+using Database;
 using Database.Con;
-using Common;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
@@ -14,9 +15,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Common.Cfg;
 //using System.Xml;
 
 namespace Discord
@@ -56,27 +57,30 @@ namespace Discord
             DiscordSocketConfig socketCfg = new DiscordSocketConfig
             {
                 WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.GetSystemWebProxy()),
-                UdpSocketProvider = DefaultUdpSocketProvider.Instance
+                UdpSocketProvider = DefaultUdpSocketProvider.Instance,
+                AlwaysDownloadUsers = true,
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
             };
 
             _client = new DiscordSocketClient(socketCfg);
+
             Console.WriteLine("Initialising");
 
             _Masters = cfg.MasterDiscord;
-            
-            _client.Log += Log;
 
+            _client.Log += Log;
             await _client.LoginAsync(TokenType.Bot, cfg.DiscordToken);
             await _client.StartAsync();
 
             _client.Ready += Client_Ready;
             _client.SlashCommandExecuted += SlashCommandHandler;
             _client.JoinedGuild += TryAddGuildCommands;
-
+            _client.UserLeft += UserLeft;
+            _client.ChannelDestroyed += PostLoop.Instance.ChannelDestroyed;
 
 
             postLoop = new Thread(PostLoop.Instance.postLoop);
-            
+
             // Block this task until the program is closed.
             await Task.Delay(-1);
         }
@@ -134,6 +138,12 @@ namespace Discord
             }
         }
 
+        private async Task UserLeft(SocketGuild guild, SocketUser user)
+        {
+            DatabaseConnector.instanze.deleteBirthday(guild.Id, user.Id);
+            Console.WriteLine($"User {user.GlobalName} left Server {guild.Name}. Birthday deleted.");
+        }
+
         private async Task TryAddGuildCommands(SocketGuild guild)
         {
             try
@@ -176,8 +186,8 @@ namespace Discord
             var globalCommand_setBirthday = new SlashCommandBuilder();
             globalCommand_setBirthday.WithName("geburtstag");
             globalCommand_setBirthday.WithDescription("Hier kannst du deinen Geburtstag hinzufügen");
-            globalCommand_setBirthday.AddOption(monthOption);
             globalCommand_setBirthday.AddOption(dayOption);
+            globalCommand_setBirthday.AddOption(monthOption);
             globalCommand_setBirthday.AddOption(yearOption);
             applicationCommandPropertiesGuild.Add(globalCommand_setBirthday.Build());
 
@@ -185,6 +195,27 @@ namespace Discord
             globalCommand_deleteBirthday.WithName("vergissmich");
             globalCommand_deleteBirthday.WithDescription("Hiermit kannst du deinen Geburtstag");
             applicationCommandPropertiesGuild.Add(globalCommand_deleteBirthday.Build());
+
+            var hourOption = new SlashCommandOptionBuilder()
+                .WithName("stunde")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithMaxValue(24)
+                .WithMinValue(0)
+                .WithDescription("Stunde zu der Geposted werden soll.")
+                .WithRequired(true);
+            var minuteOption = new SlashCommandOptionBuilder()
+                .WithName("minute")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithMaxValue(59)
+                .WithMinValue(0)
+                .WithDescription("Minute zu der Geposted werden soll.")
+                .WithRequired(true);
+            var globalCommand_setTime = new SlashCommandBuilder();
+            globalCommand_setTime.WithName("set_time");
+            globalCommand_setTime.WithDescription("Hier kann der Moderator oder Server-Owner die Post-Zeit einstellen.");
+            globalCommand_setTime.AddOption(hourOption);
+            globalCommand_setTime.AddOption(minuteOption);
+            applicationCommandPropertiesGuild.Add(globalCommand_setTime.Build());
 
             var modRoleOption = new SlashCommandOptionBuilder()
                 .WithName("modrole")
@@ -230,7 +261,7 @@ namespace Discord
                         }
                     }
                 }
-                if(!mod)
+                if (!mod)
                 {
                     SocketUser owner = _client.GetGuild(command.GuildId.Value).Owner;
                     if (owner.Id == command.User.Id)
@@ -284,11 +315,12 @@ namespace Discord
                     emb.WithFields(field);
                     int[] birthday_array = DatabaseConnector.instanze.getBirthday(command.User.Id);
                     field_birthday.WithName("Geburtstag");
-                    if (birthday_array !=  null)
+                    if (birthday_array != null)
                     {
                         string birthday = helper.intArrayToBorthdayString(birthday_array);
                         field_birthday.WithValue(birthday);
-                    } else
+                    }
+                    else
                     {
                         field_birthday.WithValue("nicht angegeben");
                     }
@@ -327,6 +359,24 @@ namespace Discord
                                 break;
                             default:
                                 break;
+                        }
+                    }
+                    if (!staticData.calendar.ContainsKey(month))
+                    {
+                        await command.RespondAsync($"Bitte gib einen korrekten Monat ein!", null, false, true);
+                        break;
+                    }
+                    if (!(day > 0 && day <= staticData.calendar[month]))
+                    {
+                        if (day == 29 && month == 2)
+                        {
+                            await command.RespondAsync("Bitte wähle entweder den 01.03 oder den 28.02. als Benachricitgungsdatum für deinen Geburtstag aus.", null, false, true, null);
+                            break;
+                        }
+                        else
+                        {
+                            await command.RespondAsync($"Diesen Tag gibt es nicht in diesem Monat. Bitte wähle einen existenten Tag aus.", null, false, true);
+                            break;
                         }
                     }
                     if (year == -1)
@@ -412,12 +462,52 @@ namespace Discord
                     emb.WithTitle("set_channel");
                     EmbedFieldBuilder field_channel = new EmbedFieldBuilder();
                     field_channel.WithName("Channel");
-                    SocketTextChannel channel = (SocketTextChannel) command.Channel;
+                    SocketTextChannel channel = (SocketTextChannel)command.Channel;
                     field_channel.WithValue($"{channel.Mention}");
                     emb.WithFields(field_channel);
                     embeds[0] = emb.Build();
                     await command.RespondAsync("", embeds);
                     PostLoop.Instance.reloadMap();
+                    break;
+                case "set_time":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!mod)
+                    {
+                        await command.RespondAsync($"Der Command muss durch einen Mod ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    long hour = 0;
+                    long minute = 0;
+                    foreach (SocketSlashCommandDataOption option in command.Data.Options)
+                    {
+                        switch (option.Name)
+                        {
+                            case "stunde":
+                                hour = (long)option.Value;
+                                break;
+                            case "minute":
+                                minute = (long)option.Value;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    DatabaseConnector.instanze.setTime(ServerId, hour, minute);
+                    emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
+                    emb.WithDescription($"Die Post Zeit für diesen Server wurde gesetzt.");
+                    emb.WithTitle("set_channel");
+                    EmbedFieldBuilder field_time = new EmbedFieldBuilder();
+                    field_time.WithName("Post-Zeit:");
+                    field_time.WithValue($"{hour.ToString("00")}:{minute.ToString("00")}");
+                    emb.WithFields(field_time);
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
+                    PostLoop.Instance.reloadTimes();
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");
