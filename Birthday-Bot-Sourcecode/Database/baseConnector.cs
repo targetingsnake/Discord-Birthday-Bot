@@ -90,7 +90,7 @@ namespace Database.Con
             cmd.ExecuteNonQuery();
         }
 
-        public void setTime(ulong guildID, int hour, int minute)
+        public void setTime(ulong guildID, long hour, long minute)
         {
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = connection;
