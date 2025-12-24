@@ -114,8 +114,6 @@ release_job:
   script:
     - echo "running release_job"
   needs:
-    - secret_detection
-    - semgrep-sast
     - build:compileCommander_prod
   release:                               # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
     tag_name: '$CI_COMMIT_TAG'
