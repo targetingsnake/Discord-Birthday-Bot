@@ -467,6 +467,16 @@ namespace Discord
                                 break;
                         }
                     }
+                    DatabaseConnector.instanze.setTime(ServerId, hour, minute);
+                    emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
+                    emb.WithDescription($"Die Post Zeit für diesen Server wurde gesetzt.");
+                    emb.WithTitle("set_channel");
+                    EmbedFieldBuilder field_time = new EmbedFieldBuilder();
+                    field_time.WithName("Post-Zeit:");
+                    field_time.WithValue($"{hour}:{minute}");
+                    emb.WithFields(field_time);
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");
