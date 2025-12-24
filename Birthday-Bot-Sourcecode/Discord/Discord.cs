@@ -473,10 +473,11 @@ namespace Discord
                     emb.WithTitle("set_channel");
                     EmbedFieldBuilder field_time = new EmbedFieldBuilder();
                     field_time.WithName("Post-Zeit:");
-                    field_time.WithValue($"{hour}:{minute}");
+                    field_time.WithValue($"{hour.ToString("00")}:{minute.ToString("00")}");
                     emb.WithFields(field_time);
                     embeds[0] = emb.Build();
                     await command.RespondAsync("", embeds);
+                    PostLoop.Instance.reloadTimes();
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");
