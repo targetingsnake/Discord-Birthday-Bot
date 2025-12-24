@@ -104,3 +104,25 @@ deploy_enroleBot_dev:
     - sudo cp /etc/birthday-bot/dev.overwrite.json /opt/birthday-bot-devel/dev.overwrite.json
     - sudo chmod -Rv 777 /opt/birthday-bot-devel/
     - sudo systemctl start bithday-bot-devel.service
+
+release_job:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG                 # Run this job when a tag is created
+  script:
+    - echo "running release_job"
+  needs:
+    - secret_detection
+    - semgrep-sast
+  dependencies:
+    - build:compileCommander_prod
+  release:                               # See https://docs.gitlab.com/ee/ci/yaml/#release for available properties
+    tag_name: '$CI_COMMIT_TAG'
+    description: '$CI_COMMIT_TAG'
+  artifacts:
+    paths:
+      - result-release/*.dll
+      - result-release/*.json
+      - result-release/Birthday-Bot-Sourcecode
+      - result-release/config.json
