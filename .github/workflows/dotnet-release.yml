@@ -32,5 +32,6 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: github.ref_type == 'tag'
       with:
+        token: ${{ secrets.RELEASETOKEN }}
         name: ${{ github.ref_name }}
         files: Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net8.0/*
