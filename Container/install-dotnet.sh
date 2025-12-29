@@ -8,4 +8,6 @@ else
     rm packages-microsoft-prod.deb
 fi
 
+apt update
 apt install -y dotnet-runtime-8.0
+apt clean
