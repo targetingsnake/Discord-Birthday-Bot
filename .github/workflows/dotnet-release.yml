@@ -28,10 +28,14 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         path: Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net8.0/*
+    - uses: vimtor/action-zip@v1.2
+      with:
+        files: Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net8.0/
+        dest: release.zip
     - name: Release
       uses: softprops/action-gh-release@v2
       if: github.ref_type == 'tag'
       with:
         token: ${{ secrets.RELEASETOKEN }}
         name: ${{ github.ref_name }}
-        files: Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net8.0/*
+        files: release.zip
