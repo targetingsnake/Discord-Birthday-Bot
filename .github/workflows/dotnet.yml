@@ -5,15 +5,13 @@ name: .NET
 
 on:
   push:
-    branches: [ "master-publish", "master-github", "github-pipeline" ]
+    branches: ["master-github", "github-pipeline" ]
   pull_request:
-    branches: [ "master-publish", "master-github", "github-pipeline" ]
+    branches: ["master-github", "github-pipeline" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET
