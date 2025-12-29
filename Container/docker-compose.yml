@@ -1,0 +1,5 @@
+services:
+  bot:
+    image: "targetingsnake/birthday-bot:latest"
+    volumes:
+      - ./dev.overwrite.json:/overwrite.json
