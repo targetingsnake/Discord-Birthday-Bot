@@ -1,0 +1,44 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0
+    - name: check folder
+      run: ls -ahl
+    - name: Restore dependencies
+      run: cd Birthday-Bot-Sourcecode && dotnet restore
+    - name: Build
+      run: cd Birthday-Bot-Sourcecode && dotnet build --configuration Release -p:DebugType=None -p:DebugSymbols=false
+    - uses: actions/upload-artifact@v4
+      with:
+        path: Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net8.0/*
+    - name: Create Release
+      id: create_release
+      uses: comnoco/create-release@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Changes in this Release
+          - First Change
+          - Second Change
+        draft: false
+        prerelease: false
