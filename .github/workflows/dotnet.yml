@@ -25,7 +25,7 @@ jobs:
     - name: Restore dependencies
       run: cd Birthday-Bot-Sourcecode && dotnet restore
     - name: Build
-      run: cd Birthday-Bot-Sourcecode && dotnet build --configuration Release
+      run: cd Birthday-Bot-Sourcecode && dotnet build --configuration Release -p:DebugType=None -p:DebugSymbols=false
     - uses: actions/upload-artifact@v4
       with:
-        path: Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net*/*
+        path: Birthday-Bot-Sourcecode/Birthday-Bot-Sourcecode/bin/Release/net8.0/*
