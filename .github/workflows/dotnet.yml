@@ -20,6 +20,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0
+    - name: select folder
+      run: cd Birthday-Bot-Sourcecode
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
