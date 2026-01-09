@@ -104,7 +104,6 @@ namespace Discord
                 }
                 if (userIds.Contains(user.userID) == false)
                 {
-
                     DatabaseConnector.instanze.deleteBirthday(serverId, user.userID);
                     Console.WriteLine($"User {user.userID} is not in guild {guild.Name} anymore");
                     continue;
