@@ -211,7 +211,7 @@ namespace Discord
                 .WithDescription("Minute zu der Geposted werden soll.")
                 .WithRequired(true);
             var globalCommand_setTime = new SlashCommandBuilder();
-            globalCommand_setTime.WithName("set_time");
+            globalCommand_setTime.WithName("set_post_time");
             globalCommand_setTime.WithDescription("Hier kann der Moderator oder Server-Owner die Post-Zeit einstellen.");
             globalCommand_setTime.AddOption(hourOption);
             globalCommand_setTime.AddOption(minuteOption);
@@ -469,7 +469,7 @@ namespace Discord
                     await command.RespondAsync("", embeds);
                     PostLoop.Instance.reloadMap();
                     break;
-                case "set_time":
+                case "set_post_time":
                     if (command.GuildId is null)
                     {
                         await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
