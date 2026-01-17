@@ -46,12 +46,26 @@ namespace BotMaster
             {
                 throw new DataException();
             }
+            loop_wait lp = new loop_wait(0, 0, 30);
+            if (cfg.loop_wait is not null)
+            {
+                internal_loop_wait ilp = cfg.loop_wait;
+                int hour = ilp.Hours is not null ? (int) ilp.Hours : 0;
+                int minute = ilp.Minutes is not null ? (int) ilp.Minutes : 0;
+                int second = ilp.Seconds is not null ? (int) ilp.Seconds : 0;
+                if (hour == 0 && minute == 0 && second == 0)
+                {
+                    second = 30;
+                }
+                lp = new loop_wait(hour, minute, second);
+            }
 
             Console.WriteLine($"DB-Server: {cfg.SQlServer}");
             Console.WriteLine($"DB-Schema: {cfg.SQLSchema}");
             Console.WriteLine($"DB-User: {cfg.SQlUser}");
             Console.WriteLine($"DB-PW: *****************");
             Console.WriteLine($"DC-Token: *****************");
+            Console.WriteLine($"Loop-Timer: {lp.hour} h {lp.minute} m {lp.second} s");
             string DcMaster = "";
             foreach (ulong t in cfg.MasterDiscord)
             {
@@ -65,7 +79,7 @@ namespace BotMaster
             string debugText = _debug == 1 ? "enabled" : "disabled";
             Console.WriteLine($"Debug-Mode: {debugText}");
             Console.WriteLine($"DC-Master: {DcMaster}");
-            config Fcfg = new config(cfg.SQlPassword, cfg.SQlUser, cfg.SQlServer, cfg.SQLSchema, cfg.DiscordToken, cfg.MasterDiscord, cfg.BirthdayWhishes, cfg.BirthdayWishesAge, _debug);
+            config Fcfg = new config(cfg.SQlPassword, cfg.SQlUser, cfg.SQlServer, cfg.SQLSchema, cfg.DiscordToken, cfg.MasterDiscord, cfg.BirthdayWhishes, cfg.BirthdayWishesAge, _debug, lp);
 
             return Fcfg;
         }
@@ -92,5 +106,13 @@ namespace BotMaster
         public string[]? BirthdayWhishes { get; set; }
         public string[]? BirthdayWishesAge { get; set; }
         public int? Debug {  get; set; }   
+        public internal_loop_wait? loop_wait { get; set; }
+    }
+
+    public class internal_loop_wait
+    {
+        public int? Hours { get; set; }
+        public int? Minutes { get; set; }
+        public int? Seconds { get; set; }
     }
 }
