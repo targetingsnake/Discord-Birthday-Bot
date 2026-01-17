@@ -19,7 +19,7 @@ namespace Discord
     {
         private ConcurrentDictionary<ulong, ulong> map = null;
         private ConcurrentDictionary<ulong, postTime> mapPostTIme = null;
-        private TimeSpan loop_wait = new TimeSpan(0, 0, 30); //ToDo Set to 0, 5, 0 for production
+        private TimeSpan loop_wait; //ToDo Set to 0, 5, 0 for production
         private string[] birthdayWishes = null;
         private string[] birthdayWishesAge = null;
         private config config;
@@ -38,13 +38,14 @@ namespace Discord
 
         public void postLoop(object cfg)
         {
-            updateMap();
-            updateTimeMap();
             if (cfg.GetType() != typeof(config))
             {
                 throw new Exception("Type missmatch");
             }
             config = (config)cfg;
+            updateMap();
+            updateTimeMap();
+            loop_wait = new TimeSpan(config.loop_timer.hour, config.loop_timer.minute, config.loop_timer.second);
             birthdayWishes = config.BirthdayWhishes;
             birthdayWishesAge= config.BirthdayWishesAge;
             while (true)
@@ -62,6 +63,7 @@ namespace Discord
                         postBirthdays(server, map[server]);
                     }
                 }
+                
                 Thread.Sleep(loop_wait);
             }
         }
