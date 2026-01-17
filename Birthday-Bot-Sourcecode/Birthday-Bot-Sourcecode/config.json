@@ -5,7 +5,7 @@
   "SQlPassword": "pwd",
   "DiscordToken": "TokenDc",
   "MasterDiscord": [],
-  "Debug":  0,
+  "Debug": 0,
   "BirthdayWhishes": [
     "Happy Birthday, %user%!",
     "Alles Gute zum Geburtstag, %user%!",
@@ -49,5 +49,10 @@
     "Bleib wie du bist – alles Gute zum %age%. Geburtstag, %user%!",
     "Einen großartigen %age%. Geburtstag für dich, %user%!",
     "Schön, dass es dich gibt. Alles Gute zum %age%. Geburtstag, %user%!"
-  ]
+  ],
+  "loop_wait": {
+    "Hours": 0,
+    "Minutes": 5,
+    "Seconds": 0
+  }
 }
