@@ -6,7 +6,7 @@ Just click the [Link](https://discord.com/oauth2/authorize?client_id=14502003968
 
 ## Setup in Discord
 
-1. Setup Bot with a Mod-Role, e.G. the mod-role on your discord server. This can only be done by the Server-Owner.
+1. Setup Bot with a Mod-Role, e.g. the mod-role on your discord server. This can only be done by the Server-Owner.
     - `/enmod @Role`
 2. Select the Channel, in which the bot will post the birthday-greetings. For this just use the command down below in the desired text-channel.
     - `/set_channel`
@@ -27,7 +27,7 @@ Just click the [Link](https://discord.com/oauth2/authorize?client_id=14502003968
 
 ## Features
 
-- Posts only birthdays from people an your Server, which added their birthday via your server
+- Posts only birthdays from people on your Server, which added their birthday via your server
 - Channel for posts selectable
 - customizable time for post
 - minimal number of permissions needed
@@ -40,8 +40,8 @@ Requierements:
 
 #### Discord
 
-You need a developer Account and know how to create an bot. The created bot needs the following permissions:
-- in the bot-section: Server Members Intent --> nneded to make shure the birthday-person is still on server and also to get leave-events of users leaving a discord server
+You need a developer Account and know how to create a bot. The created bot needs the following permissions:
+- in the bot-section: Server Members Intent --> needed to make sure the birthday-person is still on server and also to get leave-events of users leaving a discord server
 - in the Installation Section:
   - guild install
   - Scopes: "applications.commands" and "bot"
@@ -67,5 +67,6 @@ You need a developer Account and know how to create an bot. The created bot need
 
 ## Support
 
-- via Github-Issues
+- via Github-Issues (for technical support)
 - via [Discord](https://discord.gg/p4edQRUbRt)
+- for deleting of all data the bot has from you (birthday and discord user-id), please open a ticket on the [helpdesk](https://ticket.targetingsnake.de/) with your discord username
