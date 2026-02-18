@@ -162,6 +162,8 @@ namespace Discord
 
         private async Task addGuildCommands(SocketGuild guild)
         {
+            GuildPermission modPerms = GuildPermission.KickMembers;
+
             List<ApplicationCommandProperties> applicationCommandPropertiesGuild = new();
             ulong _guildId = guild.Id;
             var monthOption = new SlashCommandOptionBuilder()
@@ -213,6 +215,7 @@ namespace Discord
             var globalCommand_setTime = new SlashCommandBuilder();
             globalCommand_setTime.WithName("set_post_time");
             globalCommand_setTime.WithDescription("Hier kann der Moderator oder Server-Owner die Post-Zeit einstellen.");
+            globalCommand_setTime.WithDefaultMemberPermissions(modPerms);
             globalCommand_setTime.AddOption(hourOption);
             globalCommand_setTime.AddOption(minuteOption);
             applicationCommandPropertiesGuild.Add(globalCommand_setTime.Build());
@@ -226,11 +229,45 @@ namespace Discord
             var globalCommand_setModRole = new SlashCommandBuilder();
             globalCommand_setModRole.WithName("enmod");
             globalCommand_setModRole.WithDescription("Hier kann die Rolle der Mods gesetzt werden.");
+            globalCommand_setModRole.WithDefaultMemberPermissions(modPerms);
             globalCommand_setModRole.AddOption(modRoleOption);
             applicationCommandPropertiesGuild.Add(globalCommand_setModRole.Build());
 
+            var addGreetingsOption = new SlashCommandOptionBuilder()
+                .WithName("gruss")
+                .WithType(ApplicationCommandOptionType.String)
+                .WithDescription("Hinzufügen eines Geburtgsgrußes")
+                .WithRequired(true);
+
+            var globalCommand_addGreetingsRole = new SlashCommandBuilder();
+            globalCommand_addGreetingsRole.WithName("gruesse_hinzufuegen");
+            globalCommand_addGreetingsRole.WithDescription("Hier können Serverspezifische Grüße hinzugefügt werden. Die Standardgrüße werden überschrieben.");
+            globalCommand_addGreetingsRole.WithDefaultMemberPermissions(modPerms);
+            globalCommand_addGreetingsRole.AddOption(addGreetingsOption);
+            applicationCommandPropertiesGuild.Add(globalCommand_addGreetingsRole.Build());
+
+            var globalCommand_getGreetings = new SlashCommandBuilder();
+            globalCommand_getGreetings.WithName("gruesse_anzeigen");
+            globalCommand_getGreetings.WithDefaultMemberPermissions(modPerms);
+            globalCommand_getGreetings.WithDescription("Zeigt die aktuell vorhandenen Serverspezifischen Grüße an.");
+            applicationCommandPropertiesGuild.Add(globalCommand_getGreetings.Build());
+
+            var deleteGreetingsOption = new SlashCommandOptionBuilder()
+                .WithName("gruss_id")
+                .WithType(ApplicationCommandOptionType.Integer)
+                .WithDescription("Hinzufügen eines Geburtgsgrußes")
+                .WithRequired(true);
+
+            var globalCommand_deleteGreetingsRole = new SlashCommandBuilder();
+            globalCommand_deleteGreetingsRole.WithName("loesche_gruesse");
+            globalCommand_deleteGreetingsRole.WithDescription("Hier können einzelne Grüße gelöscht werden.");
+            globalCommand_deleteGreetingsRole.WithDefaultMemberPermissions(modPerms);
+            globalCommand_deleteGreetingsRole.AddOption(deleteGreetingsOption);
+            applicationCommandPropertiesGuild.Add(globalCommand_deleteGreetingsRole.Build());
+
             var globalCommand_setChannel = new SlashCommandBuilder();
             globalCommand_setChannel.WithName("set_channel");
+            globalCommand_setChannel.WithDefaultMemberPermissions(modPerms);
             globalCommand_setChannel.WithDescription("Der Channel, in welchem der Command Ausgeführt wird, bekommt Benachrichtigungen des Bots.");
             applicationCommandPropertiesGuild.Add(globalCommand_setChannel.Build());
 
@@ -508,6 +545,181 @@ namespace Discord
                     embeds[0] = emb.Build();
                     await command.RespondAsync("", embeds);
                     PostLoop.Instance.reloadTimes();
+                    break;
+                case "gruesse_hinzufuegen":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!mod)
+                    {
+                        await command.RespondAsync($"Der Command muss durch einen Mod ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    string greet = "";
+                    foreach (SocketSlashCommandDataOption option in command.Data.Options)
+                    {
+                        switch (option.Name)
+                        {
+                            case "gruss":
+                                greet = (string)option.Value;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    if (!greet.Contains("%user%"))
+                    {
+                        await command.RespondAsync($"Der Gruß muss %user% enthalten, an der Stelle wo der Username enthalten sein soll.", null, false, true);
+                        break;
+                    }
+                    bool withAge = greet.Contains("%age%");
+                    DatabaseConnector.instanze.addGreeting(ServerId, greet, withAge ? 1 : 0);
+                    emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
+                    emb.WithDescription($"Ein Gruß wurde für diesen Server hinzugefügt. Nur serverspezifische Grüße werden ab jetzt auf diesem Server verwendet.");
+                    emb.WithTitle("grueße_hinzufuegen");
+                    EmbedFieldBuilder field_greeting = new EmbedFieldBuilder();
+                    field_greeting.WithName("Gruß:");
+                    field_greeting.WithValue("```" + greet + "```");
+                    EmbedFieldBuilder field_greeting_age = new EmbedFieldBuilder();
+                    field_greeting_age.WithName("Mit Alter:");
+                    string age_string = withAge ? "True" : "False";
+                    field_greeting_age.WithValue(age_string);
+                    emb.WithFields(field_greeting);
+                    emb.WithFields(field_greeting_age);
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
+                    PostLoop.Instance.updateGreetingsMap();
+                    break;
+                case "gruesse_anzeigen":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!mod)
+                    {
+                        await command.RespondAsync($"Der Command muss durch einen Mod ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    List<greeting> greetings = DatabaseConnector.instanze.getGreetings(ServerId);
+                    string output_greetings_age = "";
+                    string output_greetings = "";
+                    if (greetings.Count > 0)
+                    {
+                        foreach (greeting g in greetings)
+                        {
+                            if (g.withAge)
+                            {
+                                output_greetings_age += (output_greetings_age.Length == 0 ? "```" : System.Environment.NewLine) + $"{g.id} - {g.text}";
+                            }
+                            else
+                            {
+                                output_greetings += (output_greetings.Length == 0 ? "```" : System.Environment.NewLine) + $"{g.id} - {g.text}";
+                            }
+                        }
+                        output_greetings += "```";
+                        output_greetings_age += "```";
+                    }
+                    if (output_greetings == "```")
+                    {
+                        output_greetings = "";
+                    }
+                    if (output_greetings_age == "```")
+                    {
+                        output_greetings_age = "";
+                    }
+                    emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
+                    if (greetings.Count > 0)
+                    {
+                        emb.WithDescription($"Für den Server aktuell vorhandene Grüße:");
+                    }
+                    else
+                    {
+                        emb.WithDescription($"Für den Server sind keine Grüße aktuell vorhanden.");
+                    }
+                    emb.WithTitle("gruesse_anzeigen");
+                    if (output_greetings != "")
+                    {
+                        EmbedFieldBuilder field_greetings_show = new EmbedFieldBuilder();
+                        field_greetings_show.WithName("Allgemeine Grüße:");
+                        field_greetings_show.WithValue(output_greetings);
+                        field_greetings_show.WithIsInline(false);
+                        emb.WithFields(field_greetings_show);
+                    }
+                    if (output_greetings_age != "")
+                    {
+                        EmbedFieldBuilder field_greetings_show_age = new EmbedFieldBuilder();
+                        field_greetings_show_age.WithName("Grüße mit Altersangabe:");
+                        field_greetings_show_age.WithValue(output_greetings_age);
+                        field_greetings_show_age.WithIsInline(false);
+                        emb.WithFields(field_greetings_show_age);
+                    }
+                    embeds[0] = emb.Build();
+                    await command.RespondAsync("", embeds);
+                    break;
+                case "loesche_gruesse":
+                    if (command.GuildId is null)
+                    {
+                        await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
+                        break;
+                    }
+                    if (!mod)
+                    {
+                        await command.RespondAsync($"Der Command muss durch einen Mod ausgeführt werden.", null, false, true);
+                        break;
+                    }
+                    ServerId = command.GuildId.Value;
+                    Int64 greetingId = -1;
+                    List<greeting> greetingsList = DatabaseConnector.instanze.getGreetings(ServerId);
+                    foreach (SocketSlashCommandDataOption option in command.Data.Options)
+                    {
+                        switch (option.Name)
+                        {
+                            case "gruss_id":
+                                greetingId = (Int64)option.Value;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    bool checkCommand = false;
+                    greeting gl = new greeting(-1, "", 0);
+                    foreach (greeting g2 in greetingsList)
+                    {
+                        if (g2.id == greetingId)
+                        {
+                            checkCommand = true;
+                            gl = g2;
+                        }
+                    }
+                    if (checkCommand)
+                    {
+                        DatabaseConnector.instanze.deleteGreeting(ServerId, greetingId);
+                        emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
+                        emb.WithDescription($"Folgender Gruß wurde gelöscht:");
+                        emb.WithTitle("loesche_gruesse");
+                        EmbedFieldBuilder field_greetings_delete_id = new EmbedFieldBuilder();
+                        field_greetings_delete_id.WithName("ID:");
+                        field_greetings_delete_id.WithValue("```" + gl.id.ToString() + "```");
+                        field_greetings_delete_id.WithIsInline(false);
+                        EmbedFieldBuilder field_greetings_delete_text = new EmbedFieldBuilder();
+                        field_greetings_delete_text.WithName("Text:");
+                        field_greetings_delete_text.WithValue("```" + gl.text + "```");
+                        field_greetings_delete_text.WithIsInline(false);
+                        emb.WithFields(field_greetings_delete_id);
+                        emb.WithFields(field_greetings_delete_text);
+                        embeds[0] = emb.Build();
+                        await command.RespondAsync("", embeds);
+                        PostLoop.Instance.updateGreetingsMap();
+                    }
+                    else
+                    {
+                        await command.RespondAsync($"Du möchtest einen nicht vorhandenen Gruß löschen.", null, false, true);
+                    }
                     break;
                 default:
                     await command.RespondAsync($"You executed {command.Data.Name}");

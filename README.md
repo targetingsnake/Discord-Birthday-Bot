@@ -24,6 +24,19 @@ Just click the [Link](https://discord.com/oauth2/authorize?client_id=14502003968
 | `/enmod`   | sets mod role for bot        | Tagged custom role |
 | `/set_channel`   | Selects channel the command is executed in for bot messages        | None |
 | `/set_post_time` | Sets time for birthday posts | hour and minute as integer |
+| `/gruesse_hinzufuegen` | Adds and enables personalized greetings for the respective discord server | Text |
+| `/gruesse_anzeigen` | Displays all possible personalized greetings for the current server. If none are shown standard greetings from the config will be used. Also Displays IDs, needed for `/loesche_gruesse` | None |
+| `/loesche_gruesse` | Deletes greeting with the given ID for that particular server | ID of greeting |
+
+### Define Birthday Wishes
+
+The following two standards are used for personalized birthday wishes for servers as well as for the pre-configured wishes in the config-file.
+
+All birthday whishes must fullfill the following standards:
+- Username must be encoded in string as `%user%`
+
+Any birthday wish can fullfill the following standard:
+- Age of user can be included in birthday wish as `%age%`
 
 ## Features
 
@@ -31,6 +44,7 @@ Just click the [Link](https://discord.com/oauth2/authorize?client_id=14502003968
 - Channel for posts selectable
 - customizable time for post
 - minimal number of permissions needed
+- personalized birthday wishes per discord server
 
 ## Self hosting
 
@@ -63,6 +77,9 @@ You need a developer Account and know how to create a bot. The created bot needs
 | DiscordToken | Auth-Token from Discord |
 | MasterDiscord | Coma-seperated List of User IDs which will have global Admin-Rights for the bot. |
 | Debug | 0 --> Debug disabled, 1 --> Debug enabled |
+| BirthdayWhishes | List of Greetings without announcement of the age |
+| BirthdayWishesAge | List of Greetings with announcement of the age |
+| loop_wait | Consists of 3 self-explaining integer values "Hours", "Minutes", "Seconds": 0 |
 
 
 ## Support
