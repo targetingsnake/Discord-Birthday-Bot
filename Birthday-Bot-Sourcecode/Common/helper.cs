@@ -43,6 +43,19 @@ namespace Common
         public int postMinute { get; private set; }
     }
 
+    public struct greeting
+    {
+        public greeting(int id, string text, int withAge)
+        {
+            this.id = id;
+            this.text = text;
+            this.withAge = withAge == 1;
+        }
+        public int id { get; init; }
+        public string text { get; init; }
+        public bool withAge { get; init; }
+    }
+
     public static class staticData
     {
         public static Dictionary<long, long> calendar = new Dictionary<long, long>

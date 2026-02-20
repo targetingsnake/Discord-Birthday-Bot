@@ -102,6 +102,29 @@ namespace Database.Con
             cmd.ExecuteNonQuery();
         }
 
+        public void addGreeting(ulong guildID, string text, int withAge)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "INSERT INTO greetings (guid, text, with_age) VALUES ( @guid , @text , @with_age ) ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@guid", guildID);
+            cmd.Parameters.AddWithValue("@text", text);
+            cmd.Parameters.AddWithValue("@with_age", withAge);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void deleteGreeting(ulong guildID, Int64 id)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "DELETE FROM greetings WHERE id = @id and guid = @guildid ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@guildid", guildID);
+            cmd.Parameters.AddWithValue("@id", id);
+            cmd.ExecuteNonQuery();
+        }
+
         public ulong getMod(ulong guildID)
         {
             MySqlCommand cmd = new MySqlCommand();
@@ -247,6 +270,33 @@ namespace Database.Con
                 reader.Close();
             }
             return users;
+        }
+
+        public List<greeting> getGreetings(ulong serverID)
+        {
+            List<greeting> greetings = new List<greeting>();
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = connection;
+            cmd.CommandText = "Select id, text, with_age from greetings where guid = @guid ;";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@guid", serverID);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            try
+            {
+                while (reader.Read())
+                {
+                    greetings.Add(new greeting(reader.GetInt32(0), reader.GetString(1), reader.GetInt32(2)));
+                }
+            }
+            catch
+            {
+                Console.WriteLine($"Something is wrong on {serverID.ToString()} and has triggered an error.");
+            }
+            finally
+            {
+                reader.Close();
+            }
+            return greetings;
         }
 
         public void setLastPosted(ulong guildID, ulong userid, long timestamp)
