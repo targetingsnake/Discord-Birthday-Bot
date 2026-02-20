@@ -22,6 +22,8 @@ namespace Discord
         private TimeSpan loop_wait; //ToDo Set to 0, 5, 0 for production
         private string[] birthdayWishes = null;
         private string[] birthdayWishesAge = null;
+        private ConcurrentDictionary<ulong, List<string>> birthdayWishes_dedicated = null;
+        private ConcurrentDictionary<ulong, List<string>> birthdayWishesAge_dedicated = null;
         private config config;
 
         private PostLoop()
@@ -45,9 +47,10 @@ namespace Discord
             config = (config)cfg;
             updateMap();
             updateTimeMap();
+            updateGreetingsMap();
             loop_wait = new TimeSpan(config.loop_timer.hour, config.loop_timer.minute, config.loop_timer.second);
             birthdayWishes = config.BirthdayWhishes;
-            birthdayWishesAge= config.BirthdayWishesAge;
+            birthdayWishesAge = config.BirthdayWishesAge;
             while (true)
             {
                 foreach (ulong server in map.Keys)
@@ -63,7 +66,7 @@ namespace Discord
                         postBirthdays(server, map[server]);
                     }
                 }
-                
+
                 Thread.Sleep(loop_wait);
             }
         }
@@ -110,7 +113,7 @@ namespace Discord
                     Console.WriteLine($"User {user.userID} is not in guild {guild.Name} anymore");
                     continue;
                 }
-                Discord.instanz.GetGuild(serverId).GetTextChannel(channelId).SendMessageAsync(CreateEmbed(user));
+                Discord.instanz.GetGuild(serverId).GetTextChannel(channelId).SendMessageAsync(CreateEmbed(user, serverId));
                 DatabaseConnector.instanze.setLastPosted(serverId, user.userID, today.Ticks);
             }
         }
@@ -127,18 +130,31 @@ namespace Discord
             return channelIds.Contains(ChannelId);
         }
 
-        private string CreateEmbed(Birthday user)
+        private string CreateEmbed(Birthday user, ulong serverId)
         {
             Random random = new Random();
             string wishes = "";
             int thisYear = DateTime.Now.Year;
             if (user.year < (thisYear - 120))
             {
-                wishes = birthdayWishes[random.Next(0, birthdayWishes.Length)];
-            } else
+                if (birthdayWishes_dedicated[serverId].Count > 0)
+                {
+                    wishes = birthdayWishes_dedicated[serverId][random.Next(0, birthdayWishes_dedicated[serverId].Count)];
+                }
+                else
+                {
+                    wishes = birthdayWishes[random.Next(0, birthdayWishes.Length)];
+                }
+            }
+            else
             {
-                wishes = birthdayWishesAge[random.Next(0, birthdayWishesAge.Length)];
-                wishes = wishes.Replace("%age%", (thisYear-user.year).ToString());
+                if (birthdayWishesAge_dedicated[serverId].Count > 0)
+                {
+                    wishes = birthdayWishesAge_dedicated[serverId][random.Next(0, birthdayWishesAge_dedicated[serverId].Count)];
+                } else {
+                    wishes = birthdayWishesAge[random.Next(0, birthdayWishesAge.Length)];
+                }
+                wishes = wishes.Replace("%age%", (thisYear - user.year).ToString());
             }
             wishes = wishes.Replace("%user%", $"<@{user.userID.ToString()}>");
             return wishes;
@@ -215,6 +231,36 @@ namespace Discord
             }
             Console.WriteLine("Post time dict updated");
             mapPostTIme = mapping;
+        }
+
+        public void updateGreetingsMap()
+        {
+            birthdayWishes_dedicated = new ConcurrentDictionary<ulong, List<string>>();
+            birthdayWishesAge_dedicated = new ConcurrentDictionary<ulong, List<string>>();
+            SocketGuild[] servers = Discord.instanz.Guilds.ToArray();
+            List<ulong> server_ids = new List<ulong>();
+            foreach (SocketGuild server in servers)
+            {
+                ulong id = server.Id;
+                server_ids.Add(id);
+            }
+            foreach (ulong id in server_ids)
+            {
+                List<greeting> grts = DatabaseConnector.instanze.getGreetings(id);
+                birthdayWishesAge_dedicated[id] = new List<string>();
+                birthdayWishes_dedicated[id] = new List<string>();
+                foreach (greeting g in grts)
+                {
+                    if (g.withAge)
+                    {
+                        birthdayWishesAge_dedicated[id].Add(g.text);
+                    }
+                    else
+                    {
+                        birthdayWishes_dedicated[id].Add(g.text);
+                    }
+                }
+            }
         }
 
         public void reloadMap()
