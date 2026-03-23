@@ -337,20 +337,17 @@ namespace Discord
                         await command.RespondAsync($"Der Command kann nur auf einem Server ausgeführt werden.");
                         break;
                     }
-                    if (!right_channel)
-                    {
-                        await command.RespondAsync($"Der Command kann nur im Channel <#{right_channelId}> ausgeführt werden.", null, false, true);
-                        break;
-                    }
+                    ServerId = command.GuildId.Value;
+                    MemberId = command.User.Id;
                     emb.WithAuthor(command.User.Username, command.User.GetAvatarUrl());
                     emb.WithDescription(command.User.Mention);
                     emb.WithTitle("Userinfo");
                     EmbedFieldBuilder field = new EmbedFieldBuilder();
                     field.WithName("ID");
-                    field.WithValue(command.User.Id);
+                    field.WithValue(MemberId);
                     EmbedFieldBuilder field_birthday = new EmbedFieldBuilder();
                     emb.WithFields(field);
-                    int[] birthday_array = DatabaseConnector.instanze.getBirthday(command.User.Id);
+                    int[] birthday_array = DatabaseConnector.instanze.getBirthday(MemberId, ServerId);
                     field_birthday.WithName("Geburtstag");
                     if (birthday_array != null)
                     {
@@ -363,7 +360,7 @@ namespace Discord
                     }
                     emb.WithFields(field_birthday);
                     embeds[0] = emb.Build();
-                    await command.RespondAsync("", embeds);
+                    await command.RespondAsync("", embeds, false, true);
                     break;
                 case "geburtstag":
                     if (command.GuildId is null)
