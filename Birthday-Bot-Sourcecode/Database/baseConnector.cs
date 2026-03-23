@@ -205,13 +205,14 @@ namespace Database.Con
             return result;
         }
 
-        public int[] getBirthday(ulong userId)
+        public int[] getBirthday(ulong userId, ulong guildId)
         {
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = connection;
-            cmd.CommandText = "Select day, month, year from birthdays where uid = @uid ;";
+            cmd.CommandText = "Select day, month, year from birthdays where uid = @uid and guid = @guildid ;";
             cmd.Prepare();
             cmd.Parameters.AddWithValue("@uid", userId);
+            cmd.Parameters.AddWithValue("@guildid", guildId);
             MySqlDataReader reader = cmd.ExecuteReader();
             int[] result = [0, 0, 0];
             try
