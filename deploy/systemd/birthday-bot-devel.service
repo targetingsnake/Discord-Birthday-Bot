@@ -6,7 +6,9 @@ After=network.target
 ExecStart=/usr/bin/dotnet /opt/birthday-bot-devel/Birthday-Bot-Sourcecode.dll
 WorkingDirectory=/opt/birthday-bot-devel
 Restart=always
-
+RestartSec=30
+RestartSteps=4
+RestartMaxDelaySec=240
 
 [Install]
 WantedBy=default.target
