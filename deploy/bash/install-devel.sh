@@ -6,8 +6,8 @@
 #    EXISTS=1
 #fi
 systemctl stop birthday-bot-devel.service
-systemd disable birthday-bot-devel.service
+systemctl disable birthday-bot-devel.service
 systemctl daemon-reload
 cp deploy/systemd/birthday-bot-devel.service /etc/systemd/system/
-systemd enable birthday-bot-devel.service
+systemctl enable birthday-bot-devel.service
 systemctl daemon-reload
