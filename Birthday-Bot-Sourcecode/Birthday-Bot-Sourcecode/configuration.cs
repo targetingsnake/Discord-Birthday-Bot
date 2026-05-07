@@ -25,7 +25,7 @@ namespace BotMaster
             else if (File.Exists("dev.overwrite.json"))
             {
                 filename = "dev.overwrite.json";
-                Console.WriteLine("Deveopment overwrite found");
+                Console.WriteLine("Development overwrite found");
             }
             else if (File.Exists("config.json"))
             {
