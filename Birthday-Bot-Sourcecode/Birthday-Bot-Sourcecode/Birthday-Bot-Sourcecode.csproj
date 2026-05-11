@@ -14,6 +14,7 @@
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Database\Database.csproj" />
     <ProjectReference Include="..\Discord\Discord.csproj" />
+    <ProjectReference Include="..\Watchdog\Watchdog.csproj" />
   </ItemGroup>
 
   <ItemGroup>
