@@ -135,7 +135,18 @@ namespace Discord
             if (postLoop.ThreadState != ThreadState.Running)
             {
                 postLoop.Start(config);
+                Watchdog.Watchdog.Instance.addThread(new Watchdog.WatchedThread("postLoop", postLoop, 
+                    this.restartPostLoop));
             }
+        }
+
+        public async void restartPostLoop()
+        {
+            postLoop = new Thread(PostLoop.Instance.postLoop);
+            postLoop.Start(config);
+            Watchdog.Watchdog.Instance.addThread(new Watchdog.WatchedThread("postLoop", postLoop,
+                    this.restartPostLoop));
+            Console.WriteLine("postLoop Restarted");
         }
 
         private async Task UserLeft(SocketGuild guild, SocketUser user)

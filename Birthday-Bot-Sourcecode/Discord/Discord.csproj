@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Database\Database.csproj" />
+    <ProjectReference Include="..\Watchdog\Watchdog.csproj" />
   </ItemGroup>
 
 </Project>

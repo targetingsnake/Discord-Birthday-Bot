@@ -17,25 +17,51 @@ namespace Database.Con
     public class baseConnector
     {
 
-        private MySqlConnection connection = null;
+        private MySqlConnection _connection = null;
+        private DateTime _date = DateTime.MinValue;
+        private string connectionString = "";
 
         public baseConnector(config cfg)
         {
-            string connectionString = $"Server={cfg.SQlServer};Port=3306;UserID={cfg.SQlUser};Password={cfg.SQlPassword};Database={cfg.SQLSchema};";
-            connection = new MySqlConnection(connectionString);
-            connection.Open();
+            connectionString = $"Server={cfg.SQlServer};Port=3306;UserID={cfg.SQlUser};Password={cfg.SQlPassword};Database={cfg.SQLSchema};";
+            Console.WriteLine("Initalize Databaseconnection");
+        }
 
-            Console.WriteLine("Initalize Database:");
-            MySqlCommand command = new MySqlCommand("show tables;", connection);
-            MySqlDataReader reader = command.ExecuteReader();
-            string result = "";
-            while (reader.Read())
+        public MySqlConnection connection
+        {
+            get
             {
-                result += reader.GetString(0) + "\n";
+                if (_connection == null)
+                {
+                    _connection = new MySqlConnection(connectionString);
+                    _date = DateTime.Now;
+                    _connection.Open();
+                    Console.WriteLine("New Database Connection opened.");
+                }
+                if ((DateTime.Now - _date).TotalHours > 2)
+                {
+                    try
+                    {
+                        if (_connection.State != ConnectionState.Open)
+                        {
+                            _connection.Close();
+                            _connection.Dispose();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _connection?.Dispose();
+                        Console.WriteLine("Database connecntion failed.");
+                    }
+                    _date = DateTime.Now;
+                    _connection = new MySqlConnection(connectionString);
+                    _connection.Open();
+
+                    Console.WriteLine("New Database Connection opened due to Time.");
+
+                }
+                return _connection;
             }
-            reader.Close();
-            Console.WriteLine(result);
-            Console.WriteLine("Database Initialized.");
         }
 
         public void setBirthday(ulong guildID, ulong userid, long day, long month, long year)

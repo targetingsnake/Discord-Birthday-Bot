@@ -25,6 +25,8 @@ namespace Discord
         private ConcurrentDictionary<ulong, List<string>> birthdayWishes_dedicated = null;
         private ConcurrentDictionary<ulong, List<string>> birthdayWishesAge_dedicated = null;
         private config config;
+        CancellationTokenSource _cts;
+        CancellationToken cancellationToken;
 
         private PostLoop()
         {
@@ -40,6 +42,8 @@ namespace Discord
 
         public void postLoop(object cfg)
         {
+            _cts = new CancellationTokenSource();
+            cancellationToken = _cts.Token;
             if (cfg.GetType() != typeof(config))
             {
                 throw new Exception("Type missmatch");
@@ -51,7 +55,7 @@ namespace Discord
             loop_wait = new TimeSpan(config.loop_timer.hour, config.loop_timer.minute, config.loop_timer.second);
             birthdayWishes = config.BirthdayWhishes;
             birthdayWishesAge = config.BirthdayWishesAge;
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 foreach (ulong server in map.Keys)
                 {
@@ -64,10 +68,21 @@ namespace Discord
                     if (DateTime.Now.Hour >= mapPostTIme[server].postHour && DateTime.Now.Minute >= mapPostTIme[server].postMinute)
                     {
                         postBirthdays(server, map[server]);
+                    } else
+                    {
+                        SocketGuild guild = Discord.instanz.GetGuild(server);
+                        Console.WriteLine($"Time for Server {guild.Name} is not there yet.");
                     }
                 }
-
                 Thread.Sleep(loop_wait);
+            }
+        }
+
+        public CancellationTokenSource cts
+        {
+            get
+            {
+                return _cts;
             }
         }
 
