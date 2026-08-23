@@ -75,7 +75,7 @@ namespace BotMaster
                 }
                 DcMaster += t.ToString();
             }
-            int _debug = cfg.Debug is null ? 0 : 1;
+            int _debug = cfg.Debug is null ? 1 : (int)cfg.Debug;
             string debugText = _debug == 1 ? "enabled" : "disabled";
             Console.WriteLine($"Debug-Mode: {debugText}");
             Console.WriteLine($"DC-Master: {DcMaster}");
