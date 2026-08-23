@@ -40,7 +40,7 @@ namespace Discord
             get { return _instance; }
         }
 
-        public void postLoop(object cfg)
+        public async void postLoop(object cfg)
         {
             _cts = new CancellationTokenSource();
             cancellationToken = _cts.Token;
@@ -49,6 +49,20 @@ namespace Discord
                 throw new Exception("Type missmatch");
             }
             config = (config)cfg;
+            bool guild_ready = false;
+            while (!guild_ready)
+            {
+                guild_ready = true;
+                foreach (SocketGuild s in Discord.instanz.Guilds)
+                {
+                    if (!s.HasAllMembers)
+                    {
+                        Console.WriteLine($"Downloading users for guild {s.Name}");
+                        guild_ready = false;
+                        await s.DownloadUsersAsync();
+                    }
+                }
+            }
             updateMap();
             updateTimeMap();
             updateGreetingsMap();
@@ -108,10 +122,7 @@ namespace Discord
             }
             if (post_needed.Count == 0)
             {
-                if (config.debug)
-                {
-                    Console.WriteLine($"no Birthday Post needed for Server {guild.Name}");
-                }
+                Console.WriteLine($"no Birthday Post needed for Server {guild.Name}");
                 return;
             }
             IReadOnlyCollection<SocketGuildUser> guildUsers = guild.Users;
