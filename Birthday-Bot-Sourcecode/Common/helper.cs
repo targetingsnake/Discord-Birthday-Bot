@@ -36,8 +36,15 @@ namespace Common
     {
         public postTime(int _postHour, int _postMinute)
         {
+            if (_postHour < 0 || _postHour > 23) { _postHour = 0; _postMinute = 0; }
+            else if (_postMinute < 0 || _postMinute > 59 ) { _postMinute = 0; }
             postHour = _postHour;
             postMinute = _postMinute;
+        }
+        public postTime()
+        {
+            postHour = 0;
+            postMinute = 0;
         }
         public int postHour { get; private set; }
         public int postMinute { get; private set; }
