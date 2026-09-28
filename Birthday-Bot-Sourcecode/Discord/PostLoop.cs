@@ -40,7 +40,7 @@ namespace Discord
             get { return _instance; }
         }
 
-        public async void postLoop(object cfg)
+        public void postLoop(object cfg)
         {
             _cts = new CancellationTokenSource();
             cancellationToken = _cts.Token;
@@ -59,7 +59,10 @@ namespace Discord
                     {
                         Console.WriteLine($"Downloading users for guild {s.Name}");
                         guild_ready = false;
-                        await s.DownloadUsersAsync();
+                        s.DownloadUsersAsync().GetAwaiter().GetResult();
+                    } else
+                    {
+                        Console.WriteLine($"Downloaded users for guild {s.Name}");
                     }
                 }
             }
@@ -79,7 +82,10 @@ namespace Discord
                         DatabaseConnector.instanze.setChannel(server, 0);
                         updateMap();
                     }
-                    if (DateTime.Now.Hour >= mapPostTIme[server].postHour && DateTime.Now.Minute >= mapPostTIme[server].postMinute)
+                    postTime pt = mapPostTIme[server];
+                    TimeSpan postAt = new TimeSpan(pt.postHour, pt.postMinute, 0);
+                    if (DateTime.Now.TimeOfDay >= postAt)
+                    //if (DateTime.Now.Hour >= mapPostTIme[server].postHour && DateTime.Now.Minute >= mapPostTIme[server].postMinute)
                     {
                         postBirthdays(server, map[server]);
                     } else

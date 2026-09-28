@@ -212,7 +212,7 @@ namespace Discord
             var hourOption = new SlashCommandOptionBuilder()
                 .WithName("stunde")
                 .WithType(ApplicationCommandOptionType.Integer)
-                .WithMaxValue(24)
+                .WithMaxValue(23)
                 .WithMinValue(0)
                 .WithDescription("Stunde zu der Geposted werden soll.")
                 .WithRequired(true);
